@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  回收品类 Mapper XML
+  ============================================================================
+  本文件是「动态 SQL」的示例之一：所有 <if> 条件都是可选的，
+  前端传哪个条件就拼哪个，不传就完全不参与 WHERE。
+
+  【必须记住的一点】
+  手写 SQL 里 MyBatis-Plus 的逻辑删除（@TableLogic）**完全不生效** ——
+  它只在 MyBatis-Plus 自己生成的 SQL 上追加 deleted = 0。
+  所以下面的 <where> 里必须自己写 deleted = 0，
+  漏写的后果是：后台已删除的回收品类依然会出现在列表里，且能通过 ID 查到，
+  是使用 MyBatis-Plus 时最典型、也最容易漏测的一类 bug。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.RecycleCategoryMapper">
+
+    <!--
+      管理端回收品类多条件分页检索。
+
+      几个刻意的设计选择：
+
+      1) 字段逐个列出，不用 SELECT *
+         - 明确接口契约：VO 里有哪些字段，看这条 SQL 就知道；
+         - 表结构日后新增列（例如内部成本价）时不会自动泄露到接口；
+         - 避免把 description 这类用不到的长文本也拖回来。
+
+      2) 模糊查询用 CONCAT('%', #{}, '%') 而不是拼接字符串
+         #{} 走 PreparedStatement 预编译参数，不存在 SQL 注入；
+         字符串拼接（${}）则会被前端传入的引号与注释符号改写语义。
+
+      3) ORDER BY 用 sort, id 两列
+         只按 sort 排序时，sort 相同的行在 MySQL 中的顺序是不确定的，
+         翻页会出现「第 2 页重复出现第 1 页的某条、另一条却怎么都翻不到」。
+         补一个唯一列 id 作为最终排序键，分页结果才稳定。
+
+      4) 这里不写 LIMIT
+         分页由 MyBatis-Plus 的 PaginationInnerInterceptor 自动补
+         LIMIT 与 COUNT 查询；自己再写一次会导致 LIMIT 重复、SQL 直接报错。
+    -->
+    <select id="selectPageByCondition" resultType="com.nqx.pojo.entity.RecycleCategory">
+        SELECT id,
+               name,
+               icon,
+               unit,
+               points_per_kg,
+               description,
+               status,
+               sort,
+               create_time,
+               update_time
+        FROM recycle_category
+        <where>
+            deleted = 0
+            <if test="query.name != null and query.name != ''">
+                AND name LIKE CONCAT('%', #{query.name}, '%')
+            </if>
+            <if test="query.status != null">
+                AND status = #{query.status}
+            </if>
+        </where>
+        ORDER BY sort ASC, id DESC
+    </select>
+
+</mapper>

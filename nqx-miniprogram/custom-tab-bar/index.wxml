@@ -1,0 +1,43 @@
+<!--
+  自定义 tabBar。
+
+  【为什么图标用 background-image 而不是 <image> 或字体图标】
+
+  · WXML 里不能直接写内联 <svg>（小程序不支持），所以矢量图只能走
+    `background-image` 的 data URI，或者退化成 <image src>（那就需要真实图片文件）。
+  · 字体图标要额外下载字体包或依赖 CDN，前者增加包体、后者离线打不开 ——
+    对只有 5 个图标的小程序来说都不划算。
+  · data URI 直接内嵌，**不产生任何网络请求、不增加图片资源**，且矢量清晰。
+
+  【选中/未选中怎么切换】
+
+  两套图标（灰 / 主题色）在 JS 里都已经算好，这里用三元表达式二选一。
+  比"监听 selected 变化再重算图标"要简单，也避免了一次多余的 setData。
+-->
+<view class="tab-bar">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="tab-bar-item {{selected === index ? 'active' : ''}}"
+    data-path="{{item.pagePath}}"
+    data-index="{{index}}"
+    bindtap="onTap"
+    hover-class="tab-bar-item-hover"
+    hover-stay-time="80"
+    aria-role="tab"
+    aria-label="{{item.text}}"
+  >
+    <view class="tab-icon-wrap">
+      <view
+        class="tab-icon"
+        style="background-image: url('{{selected === index ? item.iconActive : item.icon}}')"
+      ></view>
+      <!-- 角标：购物车件数。为 0 时不渲染（空角标比没有角标更奇怪） -->
+      <view wx:if="{{item.badge && item.badge !== '0'}}" class="tab-badge">{{item.badge}}</view>
+    </view>
+    <view
+      class="tab-label"
+      style="color: {{selected === index ? selectedColor : color}}"
+    >{{item.text}}</view>
+  </view>
+</view>

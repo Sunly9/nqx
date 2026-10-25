@@ -1,0 +1,291 @@
+/* ============================================================================
+ * 移动端管理后台 —— 公共样式
+ * ============================================================================
+ *
+ * 只在 /m/* 布局加载时引入（见 views/m/layout/index.vue 的非 scoped style），
+ * 桌面端完全不受影响。
+ *
+ * 设计原则：
+ *   1. 卡片化：一块信息就是一张白卡片，靠留白分隔，不用边框线
+ *   2. 触控友好：可点区域最小 44px（iOS HIG / Material 的共同建议）
+ *   3. 安全区：底部固定栏要避开 iPhone 的 Home 指示条
+ *   4. 单列纵向：不做左右分栏，手机上横向空间永远不够
+ * ========================================================================== */
+
+:root {
+  --m-bg: #f2f4f7;
+  --m-card: #ffffff;
+  --m-text: #1f2329;
+  --m-text-2: #646a73;
+  --m-text-3: #8f959e;
+  --m-line: #eff0f1;
+  --m-primary: #409eff;
+  --m-success: #52c41a;
+  --m-warning: #fa8c16;
+  --m-danger: #f5222d;
+  --m-radius: 12px;
+  /* 底部 Tab 高度。固定栏与页面 padding-bottom 都引用它，改一处即可 */
+  --m-tabbar-h: 56px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 页面容器
+ *
+ * min-height 要减去顶部导航的 48px：`.m-body` 已经有 48px 的 padding-top，
+ * 如果这里再写 100vh，整页会永远比视口高 48px，导致"内容没超出也出现滚动条"。
+ * ------------------------------------------------------------------------- */
+.m-page {
+  min-height: calc(100vh - 48px);
+  background: var(--m-bg);
+  /* 给底部 Tab 让位：Tab 高度 + Home 指示条 */
+  padding-bottom: calc(var(--m-tabbar-h) + env(safe-area-inset-bottom) + 8px);
+  box-sizing: border-box;
+}
+
+/* 有固定底部操作栏的页面用它替代默认 padding */
+.m-page--with-bar {
+  padding-bottom: calc(68px + env(safe-area-inset-bottom) + 8px);
+}
+
+/* ---------------------------------------------------------------------------
+ * 卡片
+ * ------------------------------------------------------------------------- */
+.m-card {
+  background: var(--m-card);
+  border-radius: var(--m-radius);
+  margin: 12px;
+  padding: 14px;
+}
+
+.m-card--tap {
+  transition: background-color 0.15s;
+}
+
+.m-card--tap:active {
+  background: #fafbfc;
+}
+
+/* 卡片标题行：左边标题、右边次要信息 */
+.m-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.m-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * 键值行
+ * ------------------------------------------------------------------------- */
+.m-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--m-text-2);
+}
+
+.m-row__label {
+  flex: 0 0 auto;
+  color: var(--m-text-3);
+}
+
+.m-row__value {
+  flex: 1 1 auto;
+  text-align: right;
+  color: var(--m-text);
+  word-break: break-all;
+}
+
+/* ---------------------------------------------------------------------------
+ * 标签
+ * ------------------------------------------------------------------------- */
+.m-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.m-tag--primary {
+  color: var(--m-primary);
+  background: rgba(64, 158, 255, 0.1);
+}
+
+.m-tag--success {
+  color: var(--m-success);
+  background: rgba(82, 196, 26, 0.1);
+}
+
+.m-tag--warning {
+  color: var(--m-warning);
+  background: rgba(250, 140, 22, 0.1);
+}
+
+.m-tag--danger {
+  color: var(--m-danger);
+  background: rgba(245, 34, 45, 0.1);
+}
+
+.m-tag--info {
+  color: var(--m-text-3);
+  background: #f2f3f5;
+}
+
+/* ---------------------------------------------------------------------------
+ * 分段控制器（替代下拉筛选，手机上更好点）
+ * ------------------------------------------------------------------------- */
+.m-segmented {
+  display: flex;
+  gap: 8px;
+  padding: 12px 12px 0;
+  overflow-x: auto;
+  /* 隐藏滚动条：手机上滑动即可，露出滚动条很难看 */
+  scrollbar-width: none;
+}
+
+.m-segmented::-webkit-scrollbar {
+  display: none;
+}
+
+.m-segmented__item {
+  flex: 0 0 auto;
+  padding: 7px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--m-text-2);
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.m-segmented__item.active {
+  color: #fff;
+  background: var(--m-primary);
+}
+
+/* ---------------------------------------------------------------------------
+ * 固定底部操作栏
+ * ------------------------------------------------------------------------- */
+.m-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid var(--m-line);
+}
+
+.m-bar .el-button {
+  flex: 1;
+  margin: 0;
+  height: 44px;
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 悬浮新增按钮
+ * ------------------------------------------------------------------------- */
+.m-fab {
+  position: fixed;
+  right: 16px;
+  /* 浮在 Tab 上方；Tab 高度 + 安全区 + 一点间距 */
+  bottom: calc(var(--m-tabbar-h) + env(safe-area-inset-bottom) + 16px);
+  z-index: 20;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  background: var(--m-primary);
+  box-shadow: 0 4px 14px rgba(64, 158, 255, 0.4);
+}
+
+/* ---------------------------------------------------------------------------
+ * 空状态 / 加载
+ * ------------------------------------------------------------------------- */
+.m-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--m-text-3);
+  font-size: 14px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 表单
+ * ------------------------------------------------------------------------- */
+.m-field {
+  margin-bottom: 16px;
+}
+
+.m-field__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--m-text-2);
+}
+
+.m-field__label .req {
+  color: var(--m-danger);
+  margin-right: 2px;
+}
+
+/* 移动端输入框统一高度，方便点 */
+.m-field .el-input__wrapper,
+.m-field .el-select__wrapper {
+  min-height: 44px;
+}
+
+.m-field .el-input__inner,
+.m-field .el-textarea__inner {
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 移动端弹窗：默认铺满宽度，居中且不贴边
+ *
+ * Element Plus 的 el-dialog 默认 width 是 50%，手机上只有 150px 左右。
+ * 这里统一覆盖掉，避免每个页面各写一遍。
+ * ------------------------------------------------------------------------- */
+.m-dialog .el-dialog {
+  width: 92vw !important;
+  max-width: 480px;
+  margin: 0 auto;
+  border-radius: var(--m-radius);
+}
+
+.m-dialog .el-dialog__body {
+  padding: 12px 16px 4px;
+}
+
+/* 底部弹出的选择器（用于"选状态"这类短选项，比下拉更顺手） */
+.m-dialog--sheet .el-dialog {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  max-width: none;
+  margin: 0;
+  border-radius: var(--m-radius) var(--m-radius) 0 0;
+}

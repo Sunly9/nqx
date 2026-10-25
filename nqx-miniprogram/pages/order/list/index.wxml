@@ -1,0 +1,93 @@
+<view class="container">
+  <view class="tabs">
+    <view class="tab-item {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">全部</view>
+    <view class="tab-item {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">进行中</view>
+    <view class="tab-item {{currentTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">已完成</view>
+    <!-- 已驳回单独一个 tab：这是最需要用户处理的状态，藏在"全部"里会被忽略 -->
+    <view class="tab-item {{currentTab === 3 ? 'active' : ''}}" bindtap="switchTab" data-index="3">已驳回</view>
+  </view>
+
+  <scroll-view scroll-y class="order-list">
+    <block wx:if="{{orders.length > 0}}">
+      <view class="order-item" wx:for="{{orders}}" wx:key="id">
+        <view class="order-header">
+          <!-- 显示订单号而不是主键 ID：ID 是内部编号，对用户没有意义，还会让人以为是流水号 -->
+          <text class="order-no">订单号: {{item.order_no || item.id}}</text>
+          <text class="order-status {{item.status}}">{{item.statusText}}</text>
+        </view>
+        
+        <!-- Lab Order Layout -->
+        <block wx:if="{{role === 'lab'}}">
+          <view class="order-content">
+            <view class="info-row">
+              <text>类型：</text>
+              <text>{{item.typeText}}</text>
+            </view>
+            <view class="info-row">
+              <text>预估重量：</text>
+              <text>{{item.weight}} kg</text>
+            </view>
+            <view class="info-row" wx:if="{{item.points_earned > 0}}">
+              <text>获得积分：</text>
+              <text class="points">+{{item.points_earned}}</text>
+            </view>
+            <view class="info-row" wx:if="{{item.type === 'send'}}">
+              <text>快递单号：</text>
+              <text>{{item.courier_no}}</text>
+            </view>
+            <view class="info-row" wx:if="{{item.type === 'pickup'}}">
+              <text>预约时间：</text>
+              <text>{{item.pickup_time}}</text>
+            </view>
+
+            <!--
+              进度提示：纯展示，不是按钮。
+
+              为什么用文字而不是按钮：
+              这些状态下用户**没有任何可执行的动作** —— 审核、称重、结算
+              全是工作人员在后台完成的。做成按钮会让人以为点了能推进流程，
+              点下去却只弹一句说明，比不给按钮更让人困惑。
+            -->
+            <view class="order-hint" wx:if="{{item.hintText}}">{{item.hintText}}</view>
+          </view>
+        </block>
+
+        <!-- Procurement Order Layout (保留原样) -->
+        <block wx:else>
+          <view class="order-content">
+            <!-- 暂未实现采购端订单逻辑 -->
+            <view class="total-row">
+              <text>暂无采购订单</text>
+            </view>
+          </view>
+        </block>
+
+        <view class="order-footer">
+          <text class="order-time">{{item.formattedDate}}</text>
+          <view class="btn-group">
+            <!--
+              购物车式操作区：只放用户真的能做的事。
+              「验收」已经删掉了 —— 见 index.js 里 hintText 的说明。
+            -->
+            <button class="mini-btn" size="mini" bindtap="viewDetail" data-id="{{item.id}}">查看详情</button>
+            <!--
+              复制快递单号：寄件后用户最常做的动作（去查物流）。
+              纯本地操作（wx.setClipboardData），不需要后端。
+            -->
+            <button
+              wx:if="{{item.courier_no}}"
+              class="mini-btn"
+              size="mini"
+              catchtap="copyCourier"
+              data-no="{{item.courier_no}}"
+            >复制单号</button>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <view wx:else class="empty-state">
+      <text>暂无订单</text>
+    </view>
+  </scroll-view>
+</view>

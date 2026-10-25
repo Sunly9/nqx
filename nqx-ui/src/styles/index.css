@@ -1,0 +1,62 @@
+/* 全局基础样式。只做 reset 与整体框架尺寸变量，业务样式一律写在各自组件里 */
+
+:root {
+  --nqx-sidebar-width: 220px;
+  --nqx-sidebar-collapsed-width: 64px;
+  --nqx-header-height: 56px;
+  --nqx-tags-height: 40px;
+  --nqx-primary: #409eff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    Arial, sans-serif;
+  font-size: 14px;
+  color: #303133;
+  background-color: #f0f2f5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 页面通用容器：各业务页面套这一层即可获得统一的留白与白底卡片感 */
+.page-container {
+  padding: 16px;
+}
+
+/* 检索表单与表格之间的间隔，避免每个页面重复写 margin */
+.search-card {
+  margin-bottom: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* 让 Element Plus 表格里的操作按钮之间保持间距 */
+.table-actions .el-button + .el-button {
+  margin-left: 8px;
+}

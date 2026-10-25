@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="section">
+    <view class="label">故障描述</view>
+    <textarea class="input-area" placeholder="请详细描述装置的故障情况..." bindinput="handleInput" value="{{description}}"></textarea>
+  </view>
+
+  <view class="section">
+    <view class="label">上传凭证</view>
+    <view class="image-list">
+      <view class="image-item" wx:for="{{images}}" wx:key="*this">
+        <image src="{{item}}" mode="aspectFill"></image>
+        <view class="delete-btn" catchtap="deleteImage" data-index="{{index}}">×</view>
+      </view>
+      <view class="add-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}">
+        <text>+</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="submitRepair" disabled="{{!description}}">提交申请</button>
+</view>

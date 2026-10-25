@@ -1,0 +1,6 @@
+<!--
+  图标本体就是这一个 view。
+  真正画图的是内联样式里的 background-image（data URI SVG），
+  所以这里不需要 <image> 标签，也就不存在图片加载失败/白屏的问题。
+-->
+<view class="nqx-icon" style="{{style}}" wx:if="{{hasIcon}}" />

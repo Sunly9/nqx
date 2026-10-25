@@ -1,0 +1,171 @@
+.container {
+  background: #f5f5f5;
+  min-height: 100vh;
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
+}
+
+/* ============================================================================
+   搜索
+   ============================================================================ */
+.search-bar {
+  background: #1989fa;
+  padding: 20rpx 30rpx;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.search-input-box {
+  background: #fff;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 30rpx;
+}
+
+.icon-search {
+  margin-right: 16rpx;
+  /* 尺寸与颜色交给 nqx-icon（size="16" color="#8a8f99"） */
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+/* 清空搜索词的按钮。用文字 × 而不是图标：
+   icons.js 里没有 x-circle，为一个叉号加一个 SVG 不划算 */
+.search-clear {
+  width: 36rpx;
+  height: 36rpx;
+  margin-left: 8rpx;
+  border-radius: 50%;
+  background: #eef0f3;
+  color: #8a8f99;
+  font-size: 26rpx;
+  line-height: 32rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* 搜索中的提示 */
+.filter-tip {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 30rpx 0;
+  font-size: 24rpx;
+}
+
+.filter-tip-text {
+  color: #666666;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-tip-count {
+  color: #999999;
+  margin-right: 16rpx;
+}
+
+.filter-tip-clear {
+  color: #1989fa;
+}
+
+/* ============================================================================
+   商品列表
+   ============================================================================ */
+.product-list {
+  padding: 20rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.product-item {
+  width: 48%;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.product-img-box {
+  width: 100%;
+  height: 300rpx;
+  background: #f6f7f9;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* 没有商品图时的兜底：底色 + 图标，而不是一片空白或外部占位图 */
+.product-img-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-info {
+  padding: 20rpx;
+}
+
+.product-name {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 80rpx;
+}
+
+.product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.product-price {
+  color: #ff4d4f;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.product-sales {
+  color: #999;
+  font-size: 22rpx;
+}
+
+/* ============================================================================
+   空状态
+   ============================================================================ */
+.empty {
+  padding: 80rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-text {
+  margin-top: 20rpx;
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.empty-action {
+  margin-top: 24rpx;
+  padding: 14rpx 40rpx;
+  font-size: 26rpx;
+  color: #07c160;
+  border: 1rpx solid #07c160;
+  border-radius: 28rpx;
+}

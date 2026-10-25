@@ -1,0 +1,64 @@
+<view class="container" wx:if="{{order}}">
+  <form bindsubmit="submitReviews">
+    <block wx:for="{{reviews}}" wx:key="product_id" wx:for-index="reviewIndex">
+      <view class="review-card">
+        <!-- 商品信息 -->
+        <view class="product-info">
+          <image class="product-img" src="{{item.product_image}}" mode="aspectFill"></image>
+          <text class="product-name">{{item.product_name}}</text>
+        </view>
+
+        <!-- 评分 -->
+        <view class="rating-section">
+          <text class="label">商品评分</text>
+          <view class="stars">
+            <view 
+              wx:for="{{[1, 2, 3, 4, 5]}}" 
+              wx:key="*this" 
+              wx:for-item="star"
+              class="star {{star <= item.rating ? 'active' : ''}}"
+              catchtap="handleRating"
+              data-index="{{reviewIndex}}"
+              data-rating="{{star}}"
+            >★</view>
+          </view>
+          <text class="rating-text">{{ratingTexts[item.rating - 1]}}</text>
+        </view>
+
+        <!-- 评价内容 -->
+        <view class="content-section">
+          <textarea 
+            class="review-input" 
+            placeholder="宝贝满足你的期待吗？说说你的使用心得，分享给想买的他们吧" 
+            bindinput="handleContentInput" 
+            data-index="{{reviewIndex}}"
+            value="{{item.content}}"
+            maxlength="200"
+          ></textarea>
+        </view>
+
+        <!-- 图片上传 -->
+        <view class="upload-section">
+          <view class="image-list">
+            <view class="image-item" wx:for="{{item.images}}" wx:key="*this" wx:for-item="img" wx:for-index="imgIdx">
+              <image src="{{img}}" mode="aspectFill"></image>
+              <view class="delete-btn" catchtap="deleteImage" data-index="{{reviewIndex}}" data-img-index="{{imgIdx}}">×</view>
+            </view>
+            <view class="add-btn" catchtap="chooseImage" data-index="{{reviewIndex}}" wx:if="{{item.images.length < 3}}">
+              <nqx-icon name="camera" size="24" color="#999999" class="camera-icon" />
+              <text class="add-text">晒图</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="footer-bar">
+      <button class="submit-btn" form-type="submit">发布评价</button>
+    </view>
+  </form>
+</view>
+
+<view class="loading" wx:else>
+  <view class="spinner"></view>
+</view>

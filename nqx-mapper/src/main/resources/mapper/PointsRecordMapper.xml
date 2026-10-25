@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  积分流水 Mapper XML
+  ============================================================================
+  注意：points_record 是「只追加」的账本表，没有 deleted 列，
+  因此本文件的手写 SQL 不带 deleted 条件 —— 对没有该列的表盲加会报 Unknown column。
+  但 JOIN 的 app_user 有 deleted，必须带上（写在 ON 里，见下方说明）。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.PointsRecordMapper">
+
+    <!--
+      后台流水多条件检索。
+
+      `u.deleted = 0` 写在 ON 里而不是 WHERE 里：
+      这是 LEFT JOIN 的经典陷阱。若写在 WHERE，
+      "用户已被删除、但流水还在"的历史记录会整行消失 ——
+      而积分流水是账目，账目消失比昵称缺失严重得多。
+      写在 ON 里则只影响能否取到昵称（取不到就是 NULL），记录本身仍在。
+
+      日期范围用 `&gt;=` 与 `&lt; #{endDate + 1 天}` 的写法而不是 `&lt;= endDate`：
+      因为 create_time 是 DATETIME（带时分秒），
+      `&lt;= '2026-10-15'` 实际等价于 `&lt;= '2026-10-15 00:00:00'`，
+      会把当天 00:00 之后的记录全部漏掉 —— 用户选了"截止到今天"却发现今天的记录不在，
+      这是日期筛选最常见的一个坑。
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.vo.order.AdminPointsRecordVO">
+        SELECT r.id,
+               r.user_id,
+               u.nickname,
+               r.change_type,
+               r.change_value,
+               r.balance_after,
+               r.biz_no,
+               r.remark,
+               r.create_time
+        FROM points_record r
+                 LEFT JOIN app_user u
+                           ON u.id = r.user_id AND u.deleted = 0
+        <where>
+            <if test="query.userId != null">
+                AND r.user_id = #{query.userId}
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                AND u.nickname LIKE CONCAT('%', #{query.nickname}, '%')
+            </if>
+            <if test="query.changeType != null">
+                AND r.change_type = #{query.changeType}
+            </if>
+            <if test="query.bizNo != null and query.bizNo != ''">
+                AND r.biz_no LIKE CONCAT('%', #{query.bizNo}, '%')
+            </if>
+            <if test="query.startDate != null">
+                AND r.create_time &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND r.create_time &lt; DATE_ADD(#{query.endDate}, INTERVAL 1 DAY)
+            </if>
+        </where>
+        ORDER BY r.create_time DESC, r.id DESC
+    </select>
+
+</mapper>

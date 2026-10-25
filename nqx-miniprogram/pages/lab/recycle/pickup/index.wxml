@@ -1,0 +1,78 @@
+<view class="container">
+  <view class="form-card">
+    <view class="form-title">上门信息</view>
+    
+    <view class="form-item">
+      <view class="label">联系人</view>
+      <input class="input" placeholder="请输入或选择联系人" model:value="{{contact}}" />
+      <view class="select-btn" bindtap="selectAddress">选择</view>
+    </view>
+    
+    <view class="form-item">
+      <view class="label">联系电话</view>
+      <input class="input" type="number" placeholder="请输入手机号码" model:value="{{phone}}" />
+    </view>
+    
+    <view class="form-item">
+      <view class="label">上门地址</view>
+      <textarea class="textarea" placeholder="请输入详细地址" model:value="{{address}}" />
+    </view>
+
+    <!--
+      电池品类（原来是「电池类型」三选一：纽扣锂电池/普通干电池/其他废旧电池）。
+
+      那个字段**从来没有提交给后端**，也没有对应的报价 —— 选了等于没选。
+      现在换成后端真正用来算积分的 recycle_category（六档，50~200 积分/kg）。
+    -->
+    <view class="form-item">
+      <view class="label">电池品类</view>
+      <picker bindchange="bindCategoryChange" value="{{categoryIndex}}" range="{{categories}}" range-key="name">
+        <view class="picker">
+          {{categoryIndex >= 0 ? categoryName : '请选择电池品类'}} ▾
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="label">预估重量 (kg)</view>
+      <input class="input" type="digit" placeholder="请输入预估重量" model:value="{{weight}}" bindinput="onWeightInput" />
+    </view>
+
+    <!-- 预计积分：与后端结算口径一致（品类单价 × 重量，向下取整） -->
+    <view class="points-preview" wx:if="{{categoryIndex >= 0 && estimatedPoints > 0}}">
+      <text>按 {{pointsPerKg}} 积分/kg 估算，约可得</text>
+      <text class="points-value">{{estimatedPoints}}</text>
+      <text>积分</text>
+      <view class="points-hint">最终以工作人员现场称重后的实际重量为准</view>
+    </view>
+  </view>
+
+  <!--
+    ⚠️ 这里原来是一张「费用明细」卡：上门服务费 ¥20 + 处理费 ¥5/kg + 预估总费用，
+    底部还写着"合计 ¥xx"，确认弹窗也会问"预计总费用 X 元，是否确认？"。
+
+    但**后端从来没收到、也不会收这笔钱**：
+    RecycleOrderService 里 `order.setTotalAmount(0)`，回收单没有支付环节，
+    报酬是以**积分**形式发给用户的（按实际重量与品类）。
+
+    也就是说，页面在向用户展示一笔**根本不会发生的收费** —— 用户会以为
+    预约上门要被扣二三十块，实际一分不花；真正该被强调的"能得多少积分"
+    反而一个字没提。这种"显示收费但不收"，比不显示更容易引起纠纷。
+
+    现在改成如实说明：上门免费 + 积分怎么算。
+  -->
+  <view class="form-card fee-card">
+    <view class="form-title">费用与奖励</view>
+    <view class="fee-note">
+      上门回收<text class="free-tag">免费</text>，不收取任何上门费或处理费。
+    </view>
+    <view class="divider"></view>
+    <view class="fee-note reward-note">
+      回收完成后，工作人员会现场称重，按<text class="strong">实际重量与电池品类</text>发放积分奖励（参考 100~200 积分/公斤）。
+    </view>
+  </view>
+
+  <view class="footer-btn">
+    <button class="btn btn-lab" bindtap="submitOrder">立即预约</button>
+  </view>
+</view>

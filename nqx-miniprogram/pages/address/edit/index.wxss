@@ -1,0 +1,60 @@
+.container {
+  padding: 30rpx;
+  background: #f8f8f8;
+  min-height: 100vh;
+}
+
+.form-group {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 0 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 0;
+  border-bottom: 1rpx solid #eee;
+  font-size: 30rpx;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  width: 180rpx;
+  color: #333;
+}
+
+.input {
+  flex: 1;
+  color: #333;
+}
+
+.picker {
+  flex: 1;
+  color: #333;
+}
+
+.switch-item {
+  justify-content: space-between;
+}
+
+.footer-btn {
+  margin-top: 60rpx;
+}
+
+.save-btn {
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  margin-bottom: 30rpx;
+}
+
+.delete-btn {
+  background: #fff;
+  color: #ff4d4f;
+  border-radius: 40rpx;
+}

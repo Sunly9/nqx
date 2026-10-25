@@ -1,0 +1,97 @@
+<view class="container" wx:if="{{!loading}}">
+  <view class="status-card {{order.status}}">
+    <view class="status-text">{{order.statusText}}</view>
+    <view class="status-desc" wx:if="{{order.status === 'pending'}}">等待系统分配回收员</view>
+    <view class="status-desc" wx:if="{{order.status === 'processing'}}">回收员正在处理中</view>
+    <view class="status-desc" wx:if="{{order.status === 'completed'}}">订单已完成，积分已发放</view>
+    <view class="status-desc" wx:if="{{order.status === 'cancelled'}}">订单已取消</view>
+    <!--
+      已驳回是独立状态。
+
+      原来 REJECTED 被映射成 'cancelled'，页面就显示「订单已取消」——
+      可标题写着「已驳回」，两句话自相矛盾；
+      而且「已取消」会让人以为是**自己**取消的，实际是平台驳回的。
+    -->
+    <view class="status-desc" wx:if="{{order.status === 'rejected'}}">订单未通过审核</view>
+  </view>
+
+  <!--
+    驳回原因：后端一直有 reject_reason 字段（AppOrderVO 里也有），
+    但详情页从来没有渲染它 —— 用户只知道"被驳回"，不知道"为什么"，
+    只能去问客服。这是"数据有、但没展示"的典型遗漏。
+  -->
+  <view class="section reject-section" wx:if="{{order.status === 'rejected'}}">
+    <view class="section-title">驳回原因</view>
+    <view class="reject-reason">{{order.reject_reason || '平台未填写具体原因，请联系客服了解详情'}}</view>
+    <view class="reject-tip">如果对结果有疑问，可以在「我的 → 联系客服」里反馈。</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">订单信息</view>
+    <view class="info-item">
+      <text class="label">订单编号</text>
+      <text class="value">{{order.id}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">下单时间</text>
+      <text class="value">{{order.created_at}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">回收类型</text>
+      <text class="value">{{order.typeText}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">物品信息</view>
+    <view class="info-item">
+      <text class="label">预估重量</text>
+      <text class="value">{{order.weight}} kg</text>
+    </view>
+    <view class="info-item" wx:if="{{order.type === 'send'}}">
+      <text class="label">快递单号</text>
+      <text class="value">{{order.courier_no}}</text>
+    </view>
+    <view class="info-item" wx:if="{{order.type === 'pickup'}}">
+      <text class="label">预约时间</text>
+      <text class="value">{{order.pickup_time}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">联系信息</view>
+    <view class="info-item">
+      <text class="label">联系人</text>
+      <text class="value">{{order.contact_name}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系电话</text>
+      <text class="value">{{order.contact_phone}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">取货地址</text>
+      <!--
+        地址改为读嵌套字段。
+        新接口把 address 统一下发为对象 {name, phone, address}
+        （采购订单页读的正是 order.address.name / .phone / .address）。
+        原来这里写的是扁平的 {{order.address}}，那会让同一个字段名
+        在两类订单里呈现两种形状 —— 调用方没法写类型，排查时也无法从字段名推断内容。
+        用一个页面的一行改动，换来形状一致的接口。
+      -->
+      <text class="value">{{order.address.address}}</text>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{order.status === 'completed'}}">
+    <view class="section-title">结算信息</view>
+    <view class="info-item">
+      <text class="label">实际重量</text>
+      <text class="value highlight">{{order.weight}} kg</text>
+    </view>
+    <view class="info-item">
+      <text class="label">获得积分</text>
+      <text class="value highlight">+{{order.points_earned}}</text>
+    </view>
+  </view>
+
+</view>

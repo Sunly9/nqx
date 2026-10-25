@@ -1,0 +1,139 @@
+<view class="container">
+  <!-- 头部卡片：积分展示 -->
+  <view class="header-card" bindtap="navTo" data-url="/pages/points/index">
+    <view class="user-info">
+      <view class="welcome-text">Hi, {{userInfo.nickname || userInfo.nickName || '实验室用户'}}</view>
+      <view class="role-badge">实验室/研究所</view>
+    </view>
+    <view class="points-box">
+      <view class="points-label">当前积分</view>
+      <view class="points-value">{{stats.totalPoints}}</view>
+      <view class="points-btn">积分兑换 ></view>
+    </view>
+  </view>
+
+  <!-- 公告栏 (新增) -->
+  <view class="announcement-bar {{announcement.type}}" wx:if="{{announcement}}">
+    <view class="announcement-icon">
+      <nqx-icon wx:if="{{announcement.type === 'warning'}}" name="megaphone" size="16" color="#1989fa" />
+      <nqx-icon wx:elif="{{announcement.type === 'alert'}}" name="alert-triangle" size="16" color="#ff4d4f" />
+      <nqx-icon wx:else name="party" size="16" color="#07c160" />
+    </view>
+    <view class="announcement-container">
+      <view class="announcement-scroll-view">
+        <text class="announcement-text">{{announcement.content}}</text>
+        <text class="announcement-text spacer">{{announcement.content}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 实时动态卡片 (新增) -->
+  <view class="live-status-card" wx:if="{{latestOrder}}" bindtap="navTo" data-url="/pages/order/list/index">
+    <view class="live-icon">
+      <!-- 原来是 {{... ? A : B}} 这种"把 emoji 塞进三元字符串"的写法；
+           换成组件后必须改成条件渲染 —— 组件标签没法作为字符串表达式的结果 -->
+      <nqx-icon wx:if="{{latestOrder.type === 'pickup'}}" name="hard-hat" size="20" color="#1989fa" />
+      <nqx-icon wx:else name="truck" size="20" color="#1989fa" />
+    </view>
+    <view class="live-content">
+      <view class="live-title">
+        <text>{{latestOrder.title}}</text>
+        <text class="live-time">{{latestOrder.time}}</text>
+      </view>
+      <view class="live-desc">{{latestOrder.desc}}</view>
+    </view>
+  </view>
+
+  <!-- 数据看板：环保成就 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <nqx-icon name="scale" size="24" color="#07c160" class="stats-icon" />
+      <view class="stats-data">
+        <view class="stats-num">{{stats.totalWeight}} <text class="unit">kg</text></view>
+        <view class="stats-desc">累计回收重量</view>
+      </view>
+    </view>
+    <!-- 点击碳减排量，弹出证书 -->
+    <view class="stats-card" bindtap="showCert">
+      <nqx-icon name="leaf" size="24" color="#07c160" class="stats-icon" />
+      <view class="stats-data">
+        <view class="stats-num">{{stats.carbonReduction}} <text class="unit">kg</text></view>
+        <view class="stats-desc">累计碳减排量</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 核心功能区：回收操作 -->
+  <view class="section-title">回收服务</view>
+  <view class="action-grid">
+    <view class="action-card send" bindtap="navTo" data-url="/pages/lab/recycle/send/index">
+      <view class="action-content">
+        <view class="action-title">寄送处理</view>
+        <view class="action-desc">小批量电池寄送</view>
+      </view>
+      <nqx-icon name="package" size="32" color="#07c160" class="action-icon" />
+    </view>
+    
+    <view class="action-card pickup" bindtap="navTo" data-url="/pages/lab/recycle/pickup/index">
+      <view class="action-content">
+        <view class="action-title">上门回收</view>
+        <view class="action-desc">大批量专业回收</view>
+      </view>
+      <nqx-icon name="truck" size="32" color="#1989fa" class="action-icon" />
+    </view>
+  </view>
+
+  <!-- 环保小知识 & 指南 -->
+  <view class="tips-section">
+    <view class="section-header">
+      <view class="title-text">知识中心</view>
+      <!-- <view class="more-link">更多 ></view> -->
+    </view>
+
+    <!-- 新增指南入口 -->
+    <view class="guide-entry" bindtap="navTo" data-url="/pages/lab/guide/index">
+      <nqx-icon name="book" size="20" color="#1989fa" class="guide-icon" />
+      <view class="guide-text">
+        <view class="guide-title">实验室废旧电池处理指南</view>
+        <view class="guide-sub">分类标准 · 绝缘包装 · 泄漏处理</view>
+      </view>
+      <view class="more-link">></view>
+    </view>
+
+    <!-- 每日答题入口 (新增) -->
+    <view class="guide-entry quiz-entry" bindtap="navTo" data-url="/pages/lab/quiz/index">
+      <nqx-icon name="brain" size="20" color="#07c160" class="guide-icon" />
+      <view class="guide-text">
+        <view class="guide-title">每日环保知识挑战</view>
+        <view class="guide-sub">答对即送 10 积分，每天一题</view>
+      </view>
+      <view class="more-link">Go ></view>
+    </view>
+
+    <view class="tip-card">
+      <view class="tip-tag">每日一识</view>
+      <view class="tip-content">{{tipContent}}</view>
+    </view>
+  </view>
+
+  <!-- 证书弹窗 -->
+  <view class="cert-modal-mask" wx:if="{{showCertificate}}" bindtap="hideCert" catchtouchmove="noop">
+    <view class="cert-modal" catchtap="noop">
+      <view class="cert-title">环保贡献证书</view>
+      <view class="cert-content">
+        兹证明
+        <view class="cert-name">{{userInfo.nickname || userInfo.nickName || '实验室用户'}}</view>
+        在纽启新生平台累计减少碳排放
+        <text class="cert-data">{{stats.carbonReduction}}</text>kg。
+        <view style="margin-top: 20rpx;">感谢您为地球生态做出的杰出贡献！</view>
+      </view>
+      <view class="cert-seal">
+        <view class="cert-seal-inner">
+          <view>纽启<br/>新生</view>
+        </view>
+      </view>
+      <button class="close-btn" bindtap="hideCert">我收到了</button>
+    </view>
+  </view>
+
+</view>

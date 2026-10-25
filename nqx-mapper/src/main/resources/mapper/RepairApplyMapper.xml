@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nqx.mapper.RepairApplyMapper">
+
+    <!--
+      管理端维修工单分页查询。
+
+      【为什么两个 JOIN 都是 LEFT JOIN】
+
+      维修工单是**账**：用户提交了什么、什么时候提交的，不能因为
+      关联数据后来被删就整行消失。
+
+        · app_user：用户注销 / 被逻辑删除后，昵称那一列会是 NULL，
+          但工单必须还在 —— 否则"上个月的维修申请去哪了"无从回答；
+        · biz_order：订单也有可能被删，同理。
+
+      如果用 INNER JOIN，"用户已删除"的历史工单会**整行消失**，
+      而这种消失是静默的（列表少几行没人会立刻发现）。
+
+      【为什么 deleted 条件写在 ON 而不是 WHERE】
+
+      `LEFT JOIN ... ON ... AND u.deleted = 0` 与
+      `LEFT JOIN ... WHERE u.deleted = 0` 语义完全不同：
+      后者会把 LEFT JOIN 退化成 INNER JOIN（WHERE 过滤发生在 JOIN 之后，
+      匹配不上的行 u.deleted 是 NULL，`NULL = 0` 为假，整行被丢弃）。
+
+      这是 LEFT JOIN 的经典陷阱，踩过一次就不会忘：
+      **LEFT JOIN 的右表条件必须写在 ON 里。**
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.vo.app.AdminRepairApplyVO">
+        SELECT
+            r.id,
+            r.apply_no       AS applyNo,
+            r.user_id        AS userId,
+            u.nickname       AS nickname,
+            r.order_id       AS orderId,
+            o.order_no       AS orderNo,
+            r.product_id     AS productId,
+            r.product_name   AS productName,
+            r.fault_desc     AS faultDesc,
+            <!--
+              images 在库里是 JSON 字符串。必须映射到 imagesRaw（String），
+              再由 Service 解析进 images（List）。
+              直接写成 `r.images AS images` 会得到一个 **null** ——
+              MyBatis 不会把 ["a.jpg"] 自动转成 List<String>，而且失败是静默的。
+            -->
+            r.images         AS imagesRaw,
+            r.contact_name   AS contactName,
+            r.contact_phone  AS contactPhone,
+            r.address        AS address,
+            r.status         AS status,
+            r.warranty_type  AS warrantyType,
+            r.handle_remark  AS handleRemark,
+            r.handler_id     AS handlerId,
+            r.handle_time    AS handleTime,
+            r.create_time    AS createTime
+        FROM repair_apply r
+        LEFT JOIN app_user u ON u.id = r.user_id AND u.deleted = 0
+        LEFT JOIN biz_order o ON o.id = r.order_id AND o.deleted = 0
+        <where>
+            r.deleted = 0
+            <if test="q.applyNo != null and q.applyNo != ''">
+                AND r.apply_no LIKE CONCAT('%', #{q.applyNo}, '%')
+            </if>
+            <if test="q.nickname != null and q.nickname != ''">
+                AND u.nickname LIKE CONCAT('%', #{q.nickname}, '%')
+            </if>
+            <if test="q.productName != null and q.productName != ''">
+                AND r.product_name LIKE CONCAT('%', #{q.productName}, '%')
+            </if>
+            <if test="q.status != null">
+                AND r.status = #{q.status}
+            </if>
+            <if test="q.warrantyType != null and q.warrantyType != ''">
+                AND r.warranty_type = #{q.warrantyType}
+            </if>
+            <!-- 时间区间：用 < 次日 表达"包含截止日全天"，避免 23:59:59.5 漏数据 -->
+            <if test="q.startDate != null">
+                AND r.create_time &gt;= #{q.startDate}
+            </if>
+            <if test="q.endDate != null">
+                AND r.create_time &lt; DATE_ADD(#{q.endDate}, INTERVAL 1 DAY)
+            </if>
+        </where>
+        <!-- 待处理的排前面：管理员打开页面先看到该干的活，而不是最新提交的 -->
+        ORDER BY r.status ASC, r.create_time DESC, r.id DESC
+    </select>
+
+</mapper>

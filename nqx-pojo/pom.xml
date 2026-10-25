@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  nqx-pojo — 数据模型层
+  ============================================================================
+  职责：entity（对应数据库表）、dto（接收入参）、vo（返回出参）、query（查询条件）
+  依赖：nqx-common
+  注意：entity 绝不可直接返回给前端（sys_user.password、app_user.openid 会泄露），
+        必须经 VO 转换——这是安全边界，不是形式主义
+  ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.nqx</groupId>
+        <artifactId>nqx-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>nqx-pojo</artifactId>
+    <name>nqx-pojo</name>
+    <description>数据模型：entity / dto / vo / query</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.nqx</groupId>
+            <artifactId>nqx-common</artifactId>
+        </dependency>
+
+        <!-- Entity 上的 @TableName / @TableId / @TableLogic / @TableField 注解来源 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+    </dependencies>
+</project>

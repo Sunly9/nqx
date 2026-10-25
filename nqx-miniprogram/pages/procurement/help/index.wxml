@@ -1,0 +1,39 @@
+<view class="container">
+  <view class="header">
+    <view class="title">采购帮助</view>
+    <view class="subtitle">关于商品兑换、发货与积分获取的常见问题</view>
+  </view>
+
+  <view class="faq-list">
+    <block wx:for="{{faqList}}" wx:key="id">
+      <view class="faq-item">
+        <view class="question" bindtap="toggleFaq" data-index="{{index}}">
+          <text>{{item.question}}</text>
+          <text class="arrow {{item.open ? 'open' : ''}}">▼</text>
+        </view>
+        <view class="answer" wx:if="{{item.open}}">
+          <text>{{item.answer}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="contact-section">
+    <view class="contact-tip">没找到想要的答案？</view>
+    
+    <view class="more-contact">
+      <button class="contact-btn contact-row" open-type="contact">
+        <text class="label">在线客服：</text>
+        <text class="value">点击联系</text>
+      </button>
+      <view class="contact-row" bindtap="makePhoneCall">
+        <text class="label">客服电话：</text>
+        <text class="value">400-123-4567</text>
+      </view>
+      <view class="contact-row" bindtap="copyEmail">
+        <text class="label">客服邮箱：</text>
+        <text class="value">support@procurement.com</text>
+      </view>
+    </view>
+  </view>
+</view>

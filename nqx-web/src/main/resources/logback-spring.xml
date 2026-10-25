@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  纽启新生 (NQX) — 日志配置
+  ============================================================================
+  核心设计：链路追踪（traceId）
+    TraceIdFilter 为每个请求生成唯一 traceId 并放入 MDC，本配置通过 %X{traceId}
+    输出。这样一次请求产生的所有日志都能用同一个 traceId 串起来，
+    排查线上问题时 `grep <traceId>` 即可还原完整调用链。
+    异步线程（操作日志落库等）的 traceId 由 TaskDecorator 传递，否则子线程会丢失。
+  ============================================================================
+-->
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <!--
+      ==========================================================================
+      这一行不能删！
+      ==========================================================================
+      它引入 Spring Boot 的日志默认配置，其中注册了两个关键转换词：
+        - %clr  —— 彩色输出（仅在有颜色能力的终端生效）
+        - %wEx  —— 异常堆栈白空格折叠（让堆栈在日志里更易读）
+      这两个都是 Spring Boot 对 Logback 的扩展，原生 Logback 并不认识。
+
+      缺少本行时的报错是：
+        ERROR - There is no conversion class registered for composite
+                conversion word [clr]
+      并且会直接导致**应用启动失败**（LogbackLoggingSystem 会把它当成致命错误）。
+      这里踩过一次，故保留详细注释。
+      ==========================================================================
+    -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 日志文件存放目录：优先取环境变量，便于容器化时挂载卷 -->
+    <springProperty scope="context" name="LOG_HOME" source="logging.file.path" defaultValue="logs"/>
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="nqx"/>
+
+    <!-- ==================== 日志格式 ==================== -->
+
+    <!-- 控制台：带颜色，开发期可读性优先 -->
+    <property name="CONSOLE_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X{traceId:-N/A}]){magenta} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"/>
+
+    <!-- 文件：不含颜色，字段对齐便于 grep/awk 处理 -->
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%X{traceId:-N/A}] [%15.15t] %-40.40logger{39} : %m%n%wEx"/>
+
+    <!-- ==================== 控制台输出 ==================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ==================== 全量日志文件（按天+大小滚动）==================== -->
+    <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/history/${APP_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 单文件最大 100MB -->
+            <maxFileSize>100MB</maxFileSize>
+            <!-- 保留 30 天 -->
+            <maxHistory>30</maxHistory>
+            <!-- 所有历史日志总大小上限 5GB，超出后删除最旧的 -->
+            <totalSizeCap>5GB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ==================== 错误日志单独成文件 ====================
+         线上排查时第一件事就是看 error.log，单独成文件避免在海量 info 里翻找 -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}-error.log</file>
+        <!-- 只接收 ERROR 级别，其余级别的日志由 LevelFilter 丢弃 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/history/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ==================== 异步输出 ====================
+         文件 IO 是阻塞操作，同步写日志会拖慢业务线程。
+         改为异步后，业务线程只把日志事件放进队列就返回，由独立线程负责写盘。
+
+         丢弃策略：队列满时丢弃 TRACE/DEBUG/INFO，但**保留 WARN 和 ERROR**，
+         保证关键信息不丢 —— 这是生产配置里最容易被忽略的一点。 -->
+    <appender name="ASYNC_FILE_ALL" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE_ALL"/>
+        <!-- 队列容量 -->
+        <queueSize>1024</queueSize>
+        <!-- 队列剩余容量低于该比例时，开始丢弃低级别日志（默认 20%）-->
+        <discardingThreshold>20</discardingThreshold>
+        <!-- 不丢弃 TRACE/DEBUG/INFO 之外的级别，即 WARN/ERROR 永不丢弃 -->
+        <neverBlock>false</neverBlock>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_FILE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE_ERROR"/>
+        <queueSize>512</queueSize>
+        <!-- ERROR 专用通道，禁止丢弃 -->
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <!-- ==================== 业务包日志级别 ==================== -->
+    <logger name="com.nqx" level="DEBUG"/>
+    <logger name="com.nqx.mapper" level="DEBUG"/>
+
+    <!-- 三方框架降噪 -->
+    <logger name="org.redisson" level="WARN"/>
+    <logger name="org.springframework.data.redis" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="org.apache.ibatis" level="INFO"/>
+    <logger name="io.lettuce" level="WARN"/>
+    <logger name="org.springdoc" level="WARN"/>
+
+    <!-- 开发期（dev profile）只输出到控制台，避免本地生成大量日志文件 -->
+    <springProfile name="dev">
+        <logger name="com.nqx" level="DEBUG"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!--
+        生产环境：**只写控制台**，不再写文件。
+
+        为什么去掉 FILE_ALL / FILE_ERROR 两个 appender：
+
+        1. 容器平台（微信云托管）默认**采集标准输出**，文件里的日志根本没人读，
+           写文件纯属白费磁盘 IO，还会拖慢启动。
+        2. 容器的磁盘是临时的，写了也留不下来 —— 日志还是要靠平台收集。
+        3. 之前为了"把日志留下来"而写文件，结果在云上反而增加了一处不确定性：
+           平台若把采集路径配成某个固定目录，就和这里写死的路径对不上。
+
+        所以：容器里就老老实实吐 stdout，由平台统一收集。
+        本地开发（dev profile）本来就是控制台，行为一致。
+    -->
+    <springProfile name="prod">
+        <logger name="com.nqx" level="INFO"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 未指定 profile 时的兜底，保证日志不会完全静默 -->
+    <springProfile name="!dev &amp; !prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

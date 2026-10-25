@@ -1,0 +1,45 @@
+<view class="container">
+  <block wx:if="{{cartList.length > 0}}">
+    <view class="cart-list">
+      <view class="cart-item" wx:for="{{cartList}}" wx:key="id">
+        <icon class="checkbox" type="{{item.selected ? 'success' : 'circle'}}" color="{{item.selected ? '#1989fa' : '#999'}}" bindtap="toggleSelect" data-index="{{index}}" />
+        
+        <image class="goods-img" src="{{item.image || 'https://via.placeholder.com/150x150?text=Product'}}" mode="aspectFill"></image>
+        
+        <view class="goods-info">
+          <view class="goods-title">{{item.name}}</view>
+          <view class="goods-price-box">
+            <view class="goods-price">¥{{item.price}}</view>
+            <view class="stepper">
+              <view class="step-btn minus" bindtap="updateCount" data-index="{{index}}" data-type="minus">-</view>
+              <view class="count">{{item.count}}</view>
+              <view class="step-btn plus" bindtap="updateCount" data-index="{{index}}" data-type="plus">+</view>
+            </view>
+          </view>
+        </view>
+        
+        <view class="delete-btn" bindtap="deleteItem" data-index="{{index}}">×</view>
+      </view>
+    </view>
+  </block>
+  
+  <view wx:else class="empty-cart">
+    <nqx-icon name="cart" size="48" color="#d8dbe2" class="empty-icon" />
+    <view class="empty-text">购物车空空如也</view>
+    <button class="btn btn-procurement" bindtap="goShopping">去逛逛</button>
+  </view>
+
+  <view class="footer-bar" wx:if="{{cartList.length > 0}}">
+    <view class="all-select" bindtap="toggleSelectAll">
+      <icon type="{{allSelected ? 'success' : 'circle'}}" color="{{allSelected ? '#1989fa' : '#999'}}" />
+      <text class="select-text">全选</text>
+    </view>
+    
+    <view class="total-box">
+      <text>合计:</text>
+      <text class="total-price">¥{{totalPrice}}</text>
+    </view>
+    
+    <view class="checkout-btn" bindtap="checkout">去结算 ({{totalCount}})</view>
+  </view>
+</view>

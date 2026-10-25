@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="form-group">
+    <view class="form-item">
+      <text class="label">联系人</text>
+      <input class="input" placeholder="名字" value="{{form.name}}" bindinput="onInput" data-field="name" />
+    </view>
+    <view class="form-item">
+      <text class="label">手机号</text>
+      <input class="input" type="number" placeholder="手机号" value="{{form.phone}}" bindinput="onInput" data-field="phone" />
+    </view>
+    <view class="form-item">
+      <text class="label">地区</text>
+      <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+        <view class="picker">
+          {{region[0]}} {{region[1]}} {{region[2]}}
+        </view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="label">详细地址</text>
+      <input class="input" placeholder="街道门牌信息" value="{{form.detail}}" bindinput="onInput" data-field="detail" />
+    </view>
+    <view class="form-item switch-item">
+      <text class="label">设为默认地址</text>
+      <switch checked="{{form.is_default}}" bindchange="onSwitchChange" color="#07c160" />
+    </view>
+  </view>
+
+  <view class="footer-btn">
+    <button class="save-btn" bindtap="saveAddress">保存</button>
+    <button class="delete-btn" wx:if="{{isEdit}}" bindtap="deleteAddress">删除</button>
+  </view>
+</view>

@@ -1,0 +1,234 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e6f7ff 0%, #f8f8f8 100%); /* 浅蓝到灰白的渐变，更清新 */
+  padding: 40rpx;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 顶部装饰背景圆 */
+.container::before {
+  content: '';
+  position: absolute;
+  top: -100rpx;
+  right: -100rpx;
+  width: 400rpx;
+  height: 400rpx;
+  background: rgba(25, 137, 250, 0.05); /* 淡淡的蓝色 */
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: 44rpx; /* 稍微加大标题 */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #666;
+  background: rgba(255,255,255,0.6);
+  padding: 8rpx 24rpx;
+  border-radius: 30rpx;
+  display: inline-block;
+}
+
+.loading, .error-box {
+  text-align: center;
+  color: #999;
+  margin-top: 100rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-card {
+  background: #fff;
+  border-radius: 32rpx; /* 更大的圆角 */
+  padding: 50rpx 40rpx;
+  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.08); /* 更柔和的投影 */
+  position: relative;
+  z-index: 1;
+}
+
+.question-text {
+  font-size: 38rpx; /* 题目字体加大 */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 60rpx;
+  line-height: 1.6;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  background: #f7f8fa;
+  border-radius: 20rpx;
+  padding: 34rpx 30rpx;
+  margin-bottom: 24rpx;
+  transition: all 0.2s;
+  border: 2rpx solid transparent;
+  position: relative;
+}
+
+/* 选中状态（未提交） */
+.option-item.selected {
+  background: #e6f7ff;
+  border-color: #1989fa;
+  color: #1989fa;
+  font-weight: 500;
+}
+
+/* 正确答案（提交后） */
+.option-item.correct {
+  background: #f0fdf4;
+  border-color: #07c160;
+  color: #07c160;
+}
+
+/* 错误选项（提交后） */
+.option-item.wrong {
+  background: #fff1f0;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+/* 漏选的正确答案（提交后） */
+.option-item.correct-answer {
+  background: #f0fdf4;
+  border-color: #07c160;
+  color: #07c160;
+}
+
+.option-label {
+  font-weight: bold;
+  margin-right: 24rpx;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  background: rgba(0,0,0,0.05);
+  border-radius: 50%;
+  font-size: 26rpx;
+}
+
+.option-item.selected .option-label {
+  background: #1989fa;
+  color: #fff;
+}
+
+.option-item.correct .option-label,
+.option-item.correct-answer .option-label {
+  background: #07c160;
+  color: #fff;
+}
+
+.option-item.wrong .option-label {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.option-content {
+  flex: 1;
+  font-size: 32rpx;
+}
+
+.option-icon {
+  /* 原来是 36rpx 的 emoji；现在由 nqx-icon 的 size="18" 决定尺寸 */
+  margin-left: 20rpx;
+}
+
+.explanation-box {
+  margin-top: 50rpx;
+  background: #fffbe6; /* 浅黄色背景提示 */
+  padding: 30rpx;
+  border-radius: 16rpx;
+  animation: fadeIn 0.3s;
+  border: 1rpx solid #ffe58f;
+}
+
+.exp-title {
+  font-weight: bold;
+  margin-bottom: 12rpx;
+  font-size: 30rpx;
+  color: #d48806;
+}
+
+.exp-content {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.exp-points {
+  margin-top: 20rpx;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #faad14;
+  text-align: right;
+}
+
+.btn-submit, .btn-back {
+  margin-top: 60rpx;
+  height: 100rpx;
+  background: linear-gradient(135deg, #07c160 0%, #3cc51f 100%);
+  color: #fff;
+  border-radius: 50rpx;
+  font-size: 34rpx;
+  font-weight: bold;
+  box-shadow: 0 10rpx 20rpx rgba(7, 193, 96, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.btn-submit:active {
+  transform: scale(0.98);
+}
+
+.btn-back {
+  background: #fff;
+  color: #666;
+  border: 2rpx solid #eee;
+  box-shadow: none;
+}
+
+.result-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.result-card .icon {
+  /* 原来是 80rpx 的 emoji；现在由 nqx-icon 的 size="40" 决定尺寸 */
+  margin-bottom: 30rpx;
+}
+
+.result-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+}
+
+.result-desc {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 60rpx;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}

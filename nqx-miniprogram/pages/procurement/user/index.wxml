@@ -1,0 +1,55 @@
+<view class="container">
+  <view class="user-card" style="background: linear-gradient(135deg, #1989fa 0%, #5ca9ff 100%)">
+    <view class="avatar-box">
+      <image class="avatar" src="{{userInfo.avatar_url || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}" mode="aspectFill"></image>
+    </view>
+    <view class="info-box">
+      <view class="nickname">{{userInfo.nickname || '采购用户'}}</view>
+      <view class="role-tag">采购端</view>
+    </view>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-item" bindtap="navToEditProfile">
+      <view class="menu-left">
+        <nqx-icon name="edit" size="18" color="#8a8f99" class="menu-icon" />
+        <text>完善个人信息</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <view class="menu-item" bindtap="navToPoints">
+      <view class="menu-left">
+        <nqx-icon name="gift" size="18" color="#8a8f99" class="menu-icon" />
+        <text>积分中心</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <view class="menu-item" bindtap="navToAddress">
+      <view class="menu-left">
+        <nqx-icon name="map-pin" size="18" color="#8a8f99" class="menu-icon" />
+        <text>地址管理</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <button class="menu-item contact-btn" open-type="contact">
+      <view class="menu-left">
+        <nqx-icon name="headphones" size="18" color="#8a8f99" class="menu-icon" />
+        <text>联系客服</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </button>
+    
+    <view class="menu-item" bindtap="navToHelp">
+      <view class="menu-left">
+        <nqx-icon name="help" size="18" color="#8a8f99" class="menu-icon" />
+        <text>帮助中心</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+  </view>
+
+  <view class="logout-btn" bindtap="handleLogout">退出登录</view>
+</view>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  商品 Mapper XML
+  ============================================================================
+  本文件是「MyBatis 动态 SQL」的核心示例。
+
+  【必须记住的一点】
+  手写 SQL 里 MyBatis-Plus 的逻辑删除（@TableLogic）**完全不生效**，
+  所有查询都要自己带 `p.deleted = 0`。漏写的后果是：
+  后台已删除的商品依然会出现在列表里，且能通过 ID 查到详情。
+  这是使用 MyBatis-Plus 时最典型、也最容易漏测的一类 bug。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.ProductMapper">
+
+    <!--
+      后台商品多条件分页检索。
+
+      几个刻意的设计选择：
+
+      1) 字段逐个列出，不用 `SELECT *`
+         - 减少网络传输（description 是 TEXT，可能几 KB）
+         - 明确接口契约：VO 里有哪些字段，看这条 SQL 就知道
+         - 表结构新增列时不会意外泄露给前端
+
+      2) 分类表的 deleted 条件写在 ON 里，不写在 WHERE 里
+         这是 LEFT JOIN 最容易踩的坑。若写成
+             LEFT JOIN product_category c ON c.id = p.category_id
+             WHERE p.deleted = 0 AND c.deleted = 0
+         那么"分类被删除但商品还在"的商品会被整行过滤掉，从列表中凭空消失。
+         写在 ON 里则只影响能否取到 categoryName（取不到就是 NULL），商品本身仍在。
+         列表页宁可显示"分类已删除"，也不能让商品查不到。
+
+      3) ORDER BY 用 sort, id 两列
+         只按 sort 排序时，sort 相同的商品在 MySQL 中顺序是不确定的，
+         翻页时会出现"第 2 页重复出现第 1 页的某条、另一条却怎么都翻不到"。
+         加上唯一列 id 作为最终排序键，才能保证分页结果稳定。
+
+      4) 模糊查询用 CONCAT('%', #{}, '%') 而不是 LIKE '%${}%'
+         前者是预编译参数（#{}），不会有 SQL 注入；
+         后者是字符串拼接（${}），前端传入一段含引号与 SQL 注释符的片段，
+         就能把原本的查询条件"注释掉"，进而改写整条 SQL 的语义。
+
+         ⚠ 注意：本注释里刻意**不写出**完整的注入示例字符串。
+         原因是 XML 规范禁止注释内部出现两个连续的短横线，
+         一旦写出来，MyBatis 解析该 XML 时会直接抛 SAXParseException
+         （提示"注释中不允许出现字符串"），导致应用启动失败。
+         这个坑真实踩过两次，故在此留下说明。
+    -->
+    <select id="selectPageByCondition" resultType="com.nqx.pojo.vo.product.ProductVO">
+        SELECT p.id,
+               p.category_id,
+               c.name AS category_name,
+               p.name,
+               p.sub_title,
+               p.spec,
+               p.cover_url,
+               <!--
+                 description 与 images 必须一起查出来。
+
+                 管理端的「编辑商品」弹窗是拿列表行回填的，列表不给这两个字段，
+                 弹窗就只能把它们初始化成空值，一保存就会**把原描述和多图清空**。
+                 管理员只是改个价格，却把详情页内容弄丢了，且没有任何提示。
+
+                 教训：**读接口少给的字段，最终会以"写接口覆盖"的形式造成数据损坏。**
+
+                 注意别名：Java 字段叫 imagesRaw（因为子类 ProductDetailVO 已经把
+                 images 定义成 List<String>，同名字段类型冲突会编译失败），
+                 所以这里用 AS 把列映射成 imagesRaw。
+               -->
+               p.description,
+               p.images AS imagesRaw,
+               p.product_type,
+               p.price,
+               p.points_price,
+               p.unit,
+               p.stock,
+               p.sold_count,
+               p.exchange_limit,
+               p.is_hot,
+               p.status,
+               p.sort,
+               p.create_time
+        FROM product p
+                 LEFT JOIN product_category c
+                           ON c.id = p.category_id AND c.deleted = 0
+        <where>
+            p.deleted = 0
+            <if test="query.name != null and query.name != ''">
+                AND p.name LIKE CONCAT('%', #{query.name}, '%')
+            </if>
+            <if test="query.categoryId != null">
+                AND p.category_id = #{query.categoryId}
+            </if>
+            <if test="query.productType != null">
+                AND p.product_type = #{query.productType}
+            </if>
+            <!--
+              多类型匹配，用于积分商城（需要 2 或 3）。
+              <foreach> 会拼出 `IN (?, ?)`，参数仍是预编译占位符，
+              不存在 SQL 注入 —— 与直接拼接字符串有本质区别。
+              collection 要用 query.productTypes（带前缀），因为参数被
+              @Param("query") 包了一层。
+            -->
+            <if test="query.productTypes != null and query.productTypes.size() > 0">
+                AND p.product_type IN
+                <foreach collection="query.productTypes" item="pt" open="(" separator="," close=")">
+                    #{pt}
+                </foreach>
+            </if>
+            <if test="query.status != null">
+                AND p.status = #{query.status}
+            </if>
+            <if test="query.isHot != null">
+                AND p.is_hot = #{query.isHot}
+            </if>
+            <if test="query.minPrice != null">
+                AND p.price &gt;= #{query.minPrice}
+            </if>
+            <if test="query.maxPrice != null">
+                AND p.price &lt;= #{query.maxPrice}
+            </if>
+            <if test="query.minPoints != null">
+                AND p.points_price &gt;= #{query.minPoints}
+            </if>
+            <if test="query.maxPoints != null">
+                AND p.points_price &lt;= #{query.maxPoints}
+            </if>
+            <if test="query.stockLessThan != null">
+                AND p.stock &lt; #{query.stockLessThan}
+            </if>
+        </where>
+        ORDER BY p.sort ASC, p.id DESC
+    </select>
+
+    <!--
+      统计某分类下未删除的商品数量，供"分类删除前占用校验"使用。
+      COUNT(*) 且无 JOIN，可用到 idx_category_status_sort 索引的最左前缀 category_id。
+    -->
+    <select id="countByCategoryId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM product
+        WHERE category_id = #{categoryId}
+          AND deleted = 0
+    </select>
+
+    <!--
+      扣减库存 —— 防超卖的核心 SQL。
+
+      `AND stock >= #{quantity}` 是关键：判断与扣减在同一条语句里完成，
+      由 InnoDB 行锁串行化。调用方必须检查返回值，
+      返回 0 说明库存不足，要抛异常让整个下单事务回滚。
+      忽略返回值是这套方案最常见的失效原因。
+    -->
+    <update id="deductStock">
+        UPDATE product
+        SET stock      = stock - #{quantity},
+            sold_count = sold_count + #{quantity}
+        WHERE id = #{productId}
+          AND stock &gt;= #{quantity}
+          AND deleted = 0
+    </update>
+
+    <!--
+      回滚库存。
+      `sold_count >= #{quantity}` 是下界保护，避免累计销量被减成负数
+      （一旦为负，后续所有销量统计都失真，而且很难追溯是哪次操作导致的）。
+    -->
+    <update id="restoreStock">
+        UPDATE product
+        SET stock      = stock + #{quantity},
+            sold_count = sold_count - #{quantity}
+        WHERE id = #{productId}
+          AND sold_count &gt;= #{quantity}
+          AND deleted = 0
+    </update>
+
+</mapper>

@@ -1,0 +1,64 @@
+<view class="container">
+  <view class="header">
+    <view class="title">每日环保知识挑战</view>
+    <view class="subtitle">答对奖励 10 积分，每天仅限一次</view>
+  </view>
+
+  <block wx:if="{{loading}}">
+    <view class="loading">题目加载中...</view>
+  </block>
+
+  <block wx:elif="{{hasAnswered}}">
+    <view class="result-card completed">
+      <nqx-icon name="party" size="40" color="#07c160" class="icon" />
+      <view class="result-title">今日挑战已完成</view>
+      <view class="result-desc">明天再来挑战吧！</view>
+      <button class="btn-back" bindtap="navBack">返回主页</button>
+    </view>
+  </block>
+
+  <block wx:elif="{{question}}">
+    <view class="quiz-card">
+      <view class="question-text">{{question.question}}</view>
+      
+      <view class="options-list">
+        <block wx:for="{{question.options}}" wx:key="index">
+          <view 
+            class="option-item {{showResult ? (index === correctIndex ? 'correct' : (selectedOption === index ? 'wrong' : '')) : (selectedOption === index ? 'selected' : '')}}"
+            bindtap="handleSelect" 
+            data-index="{{index}}"
+          >
+            <view class="option-label">{{['A', 'B', 'C', 'D'][index]}}</view>
+            <view class="option-content">{{item}}</view>
+            <view class="option-icon" wx:if="{{showResult && (index === correctIndex || selectedOption === index)}}">
+              <!--
+                原来是把对错符号放进三元表达式的字符串结果里。
+                组件是标签而不是字符串，没法当表达式的值，
+                所以拆成"条件渲染两个 nqx-icon" —— 两个 wx:if 分支互斥，
+                渲染结果与原来的三元完全等价。
+              -->
+              <nqx-icon wx:if="{{index === correctIndex}}" name="check-circle" size="18" color="#07c160" />
+              <nqx-icon wx:else name="x-circle" size="18" color="#ff4d4f" />
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="explanation-box" wx:if="{{showResult}}">
+        <view class="exp-title">{{isCorrect ? '🎉 回答正确' : '😅 回答错误'}}</view>
+        <view class="exp-content">{{explanation}}</view>
+        <view class="exp-points" wx:if="{{isCorrect}}">+{{pointsAwarded}} 积分</view>
+      </view>
+
+      <button class="btn-submit" wx:if="{{selectedOption !== null && !showResult}}" bindtap="submitAnswer">确认提交</button>
+      <button class="btn-back" wx:if="{{showResult}}" bindtap="navBack">返回主页</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="error-box">
+      <text>暂无题目</text>
+      <button class="btn-back" bindtap="navBack">返回</button>
+    </view>
+  </block>
+</view>

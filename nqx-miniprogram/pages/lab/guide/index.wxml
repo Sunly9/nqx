@@ -1,0 +1,64 @@
+<view class="container">
+  <view class="header">
+    <view class="title">实验室废旧电池</view>
+    <view class="subtitle">分类与安全处理指南</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">1. 常见电池分类</view>
+    <view class="card-list">
+      <view class="card">
+        <nqx-icon name="battery" size="24" color="#07c160" class="card-icon" />
+        <view class="card-content">
+          <view class="card-title">纽扣电池</view>
+          <view class="card-desc">CR2032、LR44等。请务必使用胶带包裹正负极，防止短路。</view>
+        </view>
+      </view>
+      <view class="card">
+        <nqx-icon name="flashlight" size="24" color="#07c160" class="card-icon" />
+        <view class="card-content">
+          <view class="card-title">柱状干电池</view>
+          <view class="card-desc">AA、AAA碱性电池。保持干燥，避免重压。</view>
+        </view>
+      </view>
+      <view class="card">
+        <nqx-icon name="smartphone" size="24" color="#07c160" class="card-icon" />
+        <view class="card-content">
+          <view class="card-title">软包锂电池</view>
+          <view class="card-desc">易燃易爆，严禁刺破。需单独存放于防爆袋中。</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">2. 安全包装规范</view>
+    <view class="step-list">
+      <view class="step-item">
+        <view class="step-num">01</view>
+        <view class="step-text">检查电池外观，如有破损或漏液，请佩戴手套操作。</view>
+      </view>
+      <view class="step-item">
+        <view class="step-num">02</view>
+        <view class="step-text">对裸露的金属触点进行绝缘处理（贴透明胶带）。</view>
+      </view>
+      <view class="step-item">
+        <view class="step-num">03</view>
+        <view class="step-text">将同类电池整齐码放，放入专用回收箱或纸箱。</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section warning">
+    <view class="section-title warning-title">
+      <nqx-icon name="alert-triangle" size="16" color="#ff4d4f" class="inline-icon" />紧急情况处理
+    </view>
+    <view class="warning-box">
+      <view>如发现电池发热、冒烟或泄漏：</view>
+      <view>1. 立即将其移至空旷通风处。</view>
+      <view>2. 使用干沙或灭火毯覆盖。</view>
+      <view>3. 切勿用水直接浇灭锂电池火灾。</view>
+    </view>
+  </view>
+
+</view>

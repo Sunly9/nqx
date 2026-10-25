@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- Address Section -->
+  <view class="address-card" bindtap="selectAddress">
+    <block wx:if="{{contact}}">
+      <view class="addr-header">
+        <text class="addr-name">{{contact}}</text>
+        <text class="addr-phone">{{phone}}</text>
+      </view>
+      <view class="addr-detail">
+        <text class="tag" wx:if="{{address.is_default}}">默认</text>
+        {{displayAddress}}
+      </view>
+      <view class="arrow">></view>
+    </block>
+    <block wx:else>
+      <view class="addr-placeholder">
+        <view class="icon">+</view>
+        <text>请选择收货地址</text>
+      </view>
+      <view class="arrow">></view>
+    </block>
+  </view>
+
+  <!-- Product List -->
+  <view class="product-card">
+    <view class="card-title">商品清单</view>
+    <view class="product-item" wx:for="{{products}}" wx:key="id">
+      <image class="prod-img" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="prod-info">
+        <view class="prod-name">{{item.name}}</view>
+        <view class="prod-meta">
+          <text class="prod-price">¥{{item.price}}</text>
+          <text class="prod-count">x{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Footer -->
+  <view class="footer-bar">
+    <view class="total-box">
+      <text>合计:</text>
+      <text class="total-price">¥{{totalAmount}}</text>
+    </view>
+    <view class="submit-btn" bindtap="submitOrder">提交订单</view>
+  </view>
+</view>

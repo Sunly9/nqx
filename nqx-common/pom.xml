@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  nqx-common — 与业务无关的基础设施层
+  ============================================================================
+  职责：统一返回体、错误码、业务异常、全局异常处理、分页封装、
+        通用常量、工具类、自定义注解（@Log / @Idempotent）
+  依赖：不依赖任何内部业务模块，可被所有模块依赖
+  ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.nqx</groupId>
+        <artifactId>nqx-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>nqx-common</artifactId>
+    <name>nqx-common</name>
+    <description>通用基础设施：统一返回、异常、工具、注解</description>
+
+    <dependencies>
+        <!-- Web 相关注解与 HttpStatus：全局异常处理、统一返回体需要 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 参数校验：@Valid / @NotBlank，替代手写 if 判断 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- AOP：@Log 操作日志、@Idempotent 幂等切面 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- 工具库：字符串、集合、日期、加密、IP 获取 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+    </dependencies>
+</project>

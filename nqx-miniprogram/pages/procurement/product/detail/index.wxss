@@ -1,0 +1,298 @@
+.container {
+  padding-bottom: 120rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.swiper {
+  width: 100%;
+  height: 600rpx;
+  background: #fff;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+}
+
+.info-card {
+  background: #fff;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.price {
+  color: #ff4d4f;
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+.sales {
+  color: #999;
+  font-size: 24rpx;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.4;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  padding-left: 16rpx;
+  border-left: 6rpx solid #1989fa;
+}
+
+.description {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Reviews */
+.reviews-card {
+  padding-bottom: 20rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 10rpx 0;
+}
+
+.view-all {
+  font-size: 26rpx;
+  color: #999;
+  display: flex;
+  align-items: center;
+}
+
+.review-item {
+  border-bottom: 1rpx solid #eee;
+  padding-bottom: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background-color: #f0f0f0;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.nickname {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 4rpx;
+  display: block;
+}
+
+.stars-row {
+  display: flex;
+}
+
+.star-s {
+  font-size: 24rpx;
+  color: #ddd;
+  margin-right: 4rpx;
+}
+
+.star-s.active {
+  color: #ff9900;
+}
+
+.date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.review-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.review-images image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.empty-reviews {
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+  padding: 40rpx 0;
+}
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  padding: 0 10rpx;
+  box-sizing: border-box;
+}
+
+.icon-btn {
+  width: 96rpx;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  color: #666;
+  flex: none; /* Prevent flex resizing */
+}
+
+.icon {
+  /* 原来是 40rpx 的 emoji；现在由 nqx-icon 的 size="22" 决定尺寸，
+     这里只保留与下方"购物车/客服"文字的间距 */
+  margin-bottom: 4rpx;
+}
+
+.btn-group {
+  flex: 1;
+  display: flex;
+  height: 80rpx;
+  margin-left: 10rpx;
+  margin-right: 10rpx;
+  box-sizing: border-box;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: #fff;
+}
+
+.cart-btn {
+  background: #ffaa00;
+  border-top-left-radius: 40rpx;
+  border-bottom-left-radius: 40rpx;
+}
+
+.buy-btn {
+  background: #ff4d4f;
+  border-top-right-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+}
+
+/* Reset button styles for contact button */
+button.icon-btn {
+  background-color: transparent;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 96rpx !important;
+  line-height: normal;
+  border-radius: 0;
+  font-weight: normal;
+}
+
+button.icon-btn::after {
+  border: none;
+}
+
+/* ==========================================================================
+   购买数量选择器（本次新增）
+   --------------------------------------------------------------------------
+   视觉与购物车页的 stepper 保持一致，避免同一个交互在两处长得不一样。
+   按钮的「禁用态」只是降低透明度，仍可点击 —— 点击时由 JS 给出 toast 提示，
+   比静默无反应更容易理解。
+   ========================================================================== */
+.qty-row {
+  display: flex;
+  align-items: center;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.qty-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  border: 1rpx solid #eee;
+  border-radius: 8rpx;
+  margin-left: 24rpx;
+}
+
+.step-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+  font-size: 34rpx;
+  color: #333;
+  line-height: 1;
+}
+
+.step-btn.disabled {
+  color: #ccc;
+}
+
+.step-num {
+  min-width: 72rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.stock-hint {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #999;
+}

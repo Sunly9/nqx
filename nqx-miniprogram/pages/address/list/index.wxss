@@ -1,0 +1,89 @@
+.container {
+  padding-bottom: 120rpx;
+  background: #f8f8f8;
+  min-height: 100vh;
+}
+
+.address-list {
+  padding: 20rpx;
+}
+
+.address-item {
+  background: #fff;
+  padding: 30rpx;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-left {
+  flex: 1;
+}
+
+.user-info {
+  margin-bottom: 10rpx;
+  display: flex;
+  align-items: center;
+}
+
+.name {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-right: 20rpx;
+}
+
+.phone {
+  font-size: 28rpx;
+  color: #666;
+  margin-right: 20rpx;
+}
+
+.tag {
+  font-size: 20rpx;
+  color: #fff;
+  background: #f5222d;
+  padding: 2rpx 8rpx;
+  border-radius: 4rpx;
+}
+
+.address-detail {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.4;
+}
+
+.item-right {
+  padding-left: 30rpx;
+  border-left: 1rpx solid #eee;
+  margin-left: 20rpx;
+}
+
+.edit-icon {
+  /* 原来是 40rpx 的 emoji；现在由 nqx-icon 的 size="20" 决定尺寸 */
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+}
+
+.footer-btn {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  box-sizing: border-box;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.add-btn {
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+}

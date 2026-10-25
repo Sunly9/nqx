@@ -1,0 +1,81 @@
+<view class="container">
+  <swiper class="swiper" indicator-dots="{{product.gallery.length > 1}}" autoplay="{{product.gallery.length > 1}}" circular="{{true}}">
+    <block wx:if="{{product.gallery && product.gallery.length > 0}}">
+      <swiper-item wx:for="{{product.gallery}}" wx:key="*this">
+        <image src="{{item}}" mode="aspectFill" class="slide-image"></image>
+      </swiper-item>
+    </block>
+    <block wx:else>
+      <swiper-item>
+        <image src="{{product.image || 'https://via.placeholder.com/600x600?text=No+Image'}}" mode="aspectFill" class="slide-image"></image>
+      </swiper-item>
+    </block>
+  </swiper>
+
+  <view class="info-card">
+    <view class="price-row">
+      <text class="price">¥{{product.price}}</text>
+      <text class="sales">已售 {{product.sales}}</text>
+    </view>
+    <view class="title">{{product.name}}</view>
+
+    <!--
+      购买数量选择器。
+      旧版没有这一行，「加入购物车 / 立即购买」固定按 1 件处理，
+      用户想买多件只能反复加购。这里补上，上限取库存。
+    -->
+    <view class="qty-row">
+      <text class="qty-label">购买数量</text>
+      <view class="stepper">
+        <view class="step-btn {{count <= 1 ? 'disabled' : ''}}" bindtap="decCount">−</view>
+        <text class="step-num">{{count}}</text>
+        <view class="step-btn {{count >= (product.stock || 99) ? 'disabled' : ''}}" bindtap="incCount">+</view>
+      </view>
+      <text class="stock-hint">库存 {{product.stock}} 件</text>
+    </view>
+  </view>
+
+  <view class="info-card">
+    <view class="section-title">商品评价</view>
+    <view class="empty-reviews" wx:if="{{reviews.length === 0}}">暂无评价</view>
+    <view wx:else class="reviews-card">
+      <view class="section-header" bindtap="navToReviews">
+        <view class="section-title" style="margin-bottom:0; border:none;">商品评价 ({{reviews.length}})</view>
+        <view class="view-all">查看全部 ></view>
+      </view>
+      <view class="review-item" style="margin-top: 20rpx; border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+        <view class="review-header">
+          <image class="avatar" src="{{reviews[0].avatar_url || '/assets/default_avatar.png'}}" mode="aspectFill"></image>
+          <view class="user-info">
+            <text class="nickname">{{reviews[0].nickname || '匿名用户'}}</text>
+            <view class="stars-row">
+              <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="s" class="star-s {{s <= reviews[0].rating ? 'active' : ''}}">★</text>
+            </view>
+          </view>
+          <text class="date">{{reviews[0].formattedDate}}</text>
+        </view>
+        <view class="review-content">{{reviews[0].content}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="info-card">
+    <view class="section-title">商品详情</view>
+    <view class="description">{{product.description}}</view>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="icon-btn" bindtap="navToCart">
+      <nqx-icon name="cart" size="22" color="#666666" class="icon" />
+      <text>购物车</text>
+    </view>
+    <button class="icon-btn" open-type="contact" hover-class="none">
+      <nqx-icon name="headphones" size="22" color="#666666" class="icon" />
+      <text>客服</text>
+    </button>
+    <view class="btn-group">
+      <view class="action-btn cart-btn" bindtap="addToCart">加入购物车</view>
+      <view class="action-btn buy-btn" bindtap="buyNow">立即购买</view>
+    </view>
+  </view>
+</view>

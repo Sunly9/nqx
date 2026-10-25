@@ -1,0 +1,487 @@
+.container {
+  padding: 30rpx;
+  padding-bottom: 120rpx;
+  background: #f8f8f8;
+  min-height: 100vh;
+}
+
+/* 头部卡片 */
+.header-card {
+  background: linear-gradient(135deg, #07c160 0%, #3cc51f 100%);
+  padding: 40rpx;
+  border-radius: 24rpx;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10rpx 30rpx rgba(7, 193, 96, 0.3);
+  margin-bottom: 30rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-card::after {
+  content: '';
+  position: absolute;
+  top: -20rpx;
+  right: -20rpx;
+  width: 150rpx;
+  height: 150rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.welcome-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 12rpx;
+}
+
+.role-badge {
+  font-size: 22rpx;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6rpx 16rpx;
+  border-radius: 30rpx;
+  display: inline-block;
+  backdrop-filter: blur(10rpx);
+}
+
+.points-box {
+  text-align: right;
+  z-index: 1;
+}
+
+.points-label {
+  font-size: 24rpx;
+  opacity: 0.9;
+  margin-bottom: 4rpx;
+}
+
+.points-value {
+  font-size: 48rpx;
+  font-weight: bold;
+  font-family: 'DIN Alternate', sans-serif;
+}
+
+.points-btn {
+  font-size: 22rpx;
+  margin-top: 8rpx;
+  opacity: 0.8;
+}
+
+/* 公告栏 (新增) */
+.announcement-bar {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 30rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+.announcement-bar.warning {
+  background: #fffbe6;
+  border: 1rpx solid #ffe58f;
+}
+
+.announcement-bar.alert {
+  background: #fff1f0;
+  border: 1rpx solid #ffccc7;
+}
+
+.announcement-icon {
+  margin-right: 16rpx;
+  /* 尺寸由 nqx-icon 的 size="16" 决定；颜色按公告类型区分
+     （普通蓝 / 警告红 / 喜报绿），语义比原来统一色的 emoji 更清楚 */
+}
+
+.announcement-container {
+  flex: 1;
+  overflow: hidden;
+  height: 40rpx;
+  position: relative;
+}
+
+.announcement-scroll-view {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 15s linear infinite;
+}
+
+.announcement-text {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 40rpx;
+  margin-right: 60rpx; /* 间隔 */
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.announcement-bar.warning .announcement-text {
+  color: #faad14;
+}
+
+.announcement-bar.alert .announcement-text {
+  color: #ff4d4f;
+}
+
+/* 实时动态卡片 (新增) */
+.live-status-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: flex-start;
+  border-left: 8rpx solid #1989fa;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.live-icon {
+  /* 原来是 40rpx 的 emoji；现在由 nqx-icon 的 size="20" 决定尺寸 */
+  margin-right: 20rpx;
+  margin-top: 4rpx;
+}
+
+.live-content {
+  flex: 1;
+}
+
+.live-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+  display: flex;
+  justify-content: space-between;
+}
+
+.live-time {
+  font-size: 22rpx;
+  color: #999;
+  font-weight: normal;
+}
+
+.live-desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 数据看板 */
+.stats-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40rpx;
+}
+
+.stats-card {
+  width: 48%;
+  background: #fff;
+  padding: 30rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+.stats-icon {
+  /* 圆底 + 居中：原来靠 48rpx 的 emoji 字号撑满，现在圆底尺寸不变，
+     里面的矢量图标由 size="24" 决定（80rpx 圆底 ≈ 40px，装 24px 图标留白刚好） */
+  margin-right: 20rpx;
+  background: #f0fdf4;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-data {
+  flex: 1;
+}
+
+.stats-num {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.unit {
+  font-size: 22rpx;
+  font-weight: normal;
+  color: #666;
+}
+
+.stats-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+/* 核心功能区 */
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 24rpx;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.section-title::before {
+  content: '';
+  width: 8rpx;
+  height: 32rpx;
+  background: #07c160;
+  border-radius: 4rpx;
+  margin-right: 16rpx;
+}
+
+.action-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40rpx;
+}
+
+.action-card {
+  width: 48%;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 30rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-card:active {
+  transform: scale(0.98);
+}
+
+.action-card.send {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 2rpx solid #dcfce7;
+}
+
+.action-card.pickup {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  border: 2rpx solid #dbeafe;
+}
+
+.action-content {
+  flex: 1;
+}
+
+.action-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.action-desc {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.action-icon {
+  /* 原来是 64rpx 的 emoji；现在由 nqx-icon 的 size="32" 决定尺寸。
+     opacity 也去掉了 —— emoji 是彩色位图，降透明度才需要"压一压"，
+     线性矢量图标本身已经足够克制 */
+}
+
+/* 环保小知识 & 指南入口 */
+.tips-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.title-text {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.more-link {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.guide-entry {
+  display: flex;
+  align-items: center;
+  background: #f0f9ff;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.guide-entry.quiz-entry {
+  background: #f0fdf4;
+}
+
+.guide-entry.quiz-entry .guide-title {
+  color: #07c160;
+}
+
+.guide-icon {
+  /* 原来是 40rpx 的 emoji；现在由 nqx-icon 的 size="20" 决定尺寸 */
+  margin-right: 20rpx;
+}
+
+.guide-text {
+  flex: 1;
+}
+
+.guide-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1989fa;
+  margin-bottom: 4rpx;
+}
+
+.guide-sub {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.tip-card {
+  background: #f9f9f9;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  position: relative;
+}
+
+.tip-tag {
+  display: inline-block;
+  font-size: 20rpx;
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  margin-bottom: 12rpx;
+  font-weight: bold;
+}
+
+.tip-content {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* 证书弹窗 */
+.cert-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s;
+}
+
+.cert-modal {
+  width: 600rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx;
+  position: relative;
+  text-align: center;
+  background-image: url('https://mmbiz.qpic.cn/mmbiz_png/icTdbqWNOwNRna42FI242Lcia07jQodd2Fv3xibg8G9r5WqV7v72QcQd7wz3w/0');
+  background-size: cover;
+}
+
+.cert-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #07c160;
+  margin-bottom: 20rpx;
+  letter-spacing: 4rpx;
+}
+
+.cert-content {
+  margin: 40rpx 0;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.8;
+}
+
+.cert-name {
+  font-weight: bold;
+  font-size: 32rpx;
+  text-decoration: underline;
+}
+
+.cert-data {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #07c160;
+  margin: 0 10rpx;
+}
+
+.cert-seal {
+  width: 160rpx;
+  height: 160rpx;
+  border: 4rpx solid #cf1322;
+  border-radius: 50%;
+  color: #cf1322;
+  position: absolute;
+  bottom: 40rpx;
+  right: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  transform: rotate(-20deg);
+  opacity: 0.8;
+  font-weight: bold;
+  box-shadow: inset 0 0 10rpx rgba(207, 19, 34, 0.2);
+}
+
+.cert-seal-inner {
+  width: 140rpx;
+  height: 140rpx;
+  border: 2rpx solid #cf1322;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.close-btn {
+  margin-top: 40rpx;
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}

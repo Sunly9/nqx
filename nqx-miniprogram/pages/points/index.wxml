@@ -1,0 +1,66 @@
+<view class="container">
+  <!-- 头部积分卡片 -->
+  <view class="header-card">
+    <view class="points-info">
+      <view class="label">我的积分</view>
+      <view class="value">{{totalPoints}}</view>
+    </view>
+    <view class="history-btn" bindtap="toggleHistory">
+      <text>明细</text>
+      <text class="arrow">></text>
+    </view>
+  </view>
+
+  <!-- 兑换列表 -->
+  <view class="shop-container">
+    <view class="section-title">兑换专区</view>
+    
+    <view class="goods-grid">
+      <block wx:for="{{goodsList}}" wx:key="id">
+        <view class="goods-item">
+          <view class="goods-img-box">
+            <image src="{{item.image || 'https://via.placeholder.com/200x200?text=Gift'}}" mode="aspectFill" class="goods-img"></image>
+            <view class="sold-tag">已兑 {{item.sold}}</view>
+            <view class="out-stock-mask" wx:if="{{item.stock <= 0}}">已售罄</view>
+          </view>
+          <view class="goods-info">
+            <view class="goods-name">{{item.name}}</view>
+            <view class="goods-bottom">
+              <view class="points-price">{{item.points}} 积分</view>
+              <button 
+                class="exchange-btn {{item.stock <= 0 || totalPoints < item.points ? 'disabled' : ''}}" 
+                bindtap="exchange" 
+                data-item="{{item}}"
+                disabled="{{item.stock <= 0 || totalPoints < item.points}}"
+              >{{item.stock <= 0 ? '无货' : '兑换'}}</button>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 积分明细弹窗 -->
+  <view class="modal-mask" wx:if="{{showHistory}}" bindtap="toggleHistory">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-header">
+        <text>积分明细</text>
+        <view class="close-btn" bindtap="toggleHistory">×</view>
+      </view>
+      <scroll-view scroll-y class="history-list">
+        <block wx:if="{{history.length > 0}}">
+          <view class="list-item" wx:for="{{history}}" wx:key="id">
+            <view class="left">
+              <view class="title">{{item.desc}}</view>
+              <view class="date">{{item.date}}</view>
+            </view>
+            <view class="right {{item.type === 'gain' ? 'gain' : 'spend'}}">
+              {{item.type === 'gain' ? '+' : '-'}}{{item.amount}}
+            </view>
+          </view>
+        </block>
+        <view wx:else class="empty-state">暂无记录</view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

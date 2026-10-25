@@ -1,0 +1,62 @@
+<view class="container">
+  <!-- ==================== 搜索 ==================== -->
+  <view class="search-bar">
+    <view class="search-input-box">
+      <nqx-icon name="search" size="16" color="#8a8f99" class="icon-search" />
+      <input
+        class="search-input"
+        placeholder="搜索产品"
+        confirm-type="search"
+        value="{{keyword}}"
+        bindconfirm="onSearch"
+      />
+      <!-- 有搜索词时给一个清空入口，否则用户只能手动删字符 -->
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="onSearchClear">×</view>
+    </view>
+  </view>
+
+  <!-- 搜索中的提示 -->
+  <view wx:if="{{keyword}}" class="filter-tip">
+    <text class="filter-tip-text">搜索「{{keyword}}」</text>
+    <text class="filter-tip-count">共 {{products.length}} 件</text>
+    <text class="filter-tip-clear" bindtap="onSearchClear">清空</text>
+  </view>
+
+  <!-- ==================== 商品列表 ==================== -->
+  <view class="product-list">
+    <block wx:for="{{products}}" wx:key="id">
+      <view class="product-item" bindtap="navToDetail" data-id="{{item.id}}">
+        <view class="product-img-box">
+          <!--
+            去掉原来的 via.placeholder.com 占位图：
+            那是个国外域名，小程序里经常加载不出来（还可能被拦截），
+            表现是"商品图全是灰块"。没有图就用一个本地图标兜底。
+          -->
+          <image
+            wx:if="{{item.image}}"
+            src="{{item.image}}"
+            mode="aspectFill"
+            class="product-img"
+          />
+          <view wx:else class="product-img-empty">
+            <nqx-icon name="package" size="28" color="#c8ccd4" />
+          </view>
+        </view>
+        <view class="product-info">
+          <view class="product-name">{{item.name}}</view>
+          <view class="product-bottom">
+            <view class="product-price">¥{{item.price}}</view>
+            <view class="product-sales">已售 {{item.sales || 0}}</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态：没有商品时给明确文案，而不是一片空白 -->
+  <view wx:if="{{!loading && products.length === 0}}" class="empty">
+    <nqx-icon name="package" size="40" color="#c8ccd4" />
+    <view class="empty-text">{{keyword ? '没有找到相关商品' : '暂无商品'}}</view>
+    <view wx:if="{{keyword}}" class="empty-action" bindtap="onSearchClear">查看全部商品</view>
+  </view>
+</view>

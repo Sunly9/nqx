@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "纽启新生 - 登录",
+  "usingComponents": {
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

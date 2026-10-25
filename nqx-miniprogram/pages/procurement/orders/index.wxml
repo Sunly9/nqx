@@ -1,0 +1,167 @@
+<view class="container">
+  <!-- Tabs -->
+  <view class="tabs">
+    <!-- 固定区域: 全部 -->
+    <view class="tab-fixed">
+      <view 
+        class="tab-item {{currentTab === 'all' ? 'active' : ''}}" 
+        bindtap="switchTab" 
+        data-id="all"
+      >
+        全部
+      </view>
+    </view>
+
+    <!-- 滚动区域: 其他状态 -->
+    <scroll-view class="tabs-scroll" scroll-x enable-flex>
+      <block wx:for="{{tabs}}" wx:key="id">
+        <view 
+          wx:if="{{item.id !== 'all'}}"
+          class="tab-item {{currentTab === item.id ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-id="{{item.id}}"
+        >
+          {{item.name}}
+        </view>
+      </block>
+    </scroll-view>
+  </view>
+
+  <!-- List -->
+  <scroll-view scroll-y class="order-list">
+    <block wx:if="{{orders.length > 0}}">
+      <view class="order-card" wx:for="{{orders}}" wx:key="id">
+        <!-- 维修单视图 -->
+        <block wx:if="{{item.isRepair}}">
+           <view class="card-header">
+             <text class="order-no">维修单号: {{item.id}}</text>
+             <text class="status-text {{item.status}}">{{item.statusText}}</text>
+           </view>
+           <view class="repair-content" style="padding: 20rpx;">
+             <view style="font-weight: bold; margin-bottom: 10rpx;">故障描述:</view>
+             <view style="color: #333; margin-bottom: 20rpx;">{{item.description}}</view>
+             
+             <view style="margin-top:10rpx; color: #999; font-size: 24rpx;">申请时间: {{item.formattedDate}}</view>
+             <view style="margin-top:10rpx; font-weight: bold; color: {{item.type==='warranty' ? '#07c160' : '#ff9900'}}">
+                {{item.type === 'warranty' ? '保修期内 (免费)' : '保修期外 (收费)'}}
+             </view>
+           </view>
+        </block>
+
+        <!-- 普通订单视图 -->
+        <block wx:else>
+        <view class="card-header">
+          <text class="order-no">订单号: {{item.order_no}}</text>
+          <text class="status-text {{item.status}}">{{item.statusText}}</text>
+        </view>
+
+        <view class="goods-list" bindtap="navToDetail" data-id="{{item.id}}">
+          <view class="goods-item" wx:for="{{item.products}}" wx:key="id" wx:for-item="prod">
+            <image class="goods-img" src="{{prod.image || 'https://via.placeholder.com/150'}}" mode="aspectFill"></image>
+            <view class="goods-info">
+              <view class="goods-name">{{prod.name}}</view>
+              <view class="goods-meta">
+                <text class="goods-price">¥{{prod.price}}</text>
+                <text class="goods-count">x{{prod.count}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="card-footer">
+          <view class="total-info">
+            共{{item.products.length}}件商品 合计: <text class="total-price">¥{{item.total_amount}}</text>
+          </view>
+          
+          <view class="action-btns">
+            <!-- 待付款 -->
+            <block wx:if="{{item.status === 'pending_payment'}}">
+              <button 
+                class="btn" 
+                size="mini" 
+                catchtap="handleCancel" 
+                data-id="{{item.id}}"
+              >取消订单</button>
+              <button 
+                class="btn primary" 
+                size="mini" 
+                catchtap="handlePay" 
+                data-id="{{item.id}}"
+                data-amount="{{item.total_amount}}"
+              >去支付</button>
+            </block>
+
+            <!-- 待发货 -->
+            <button 
+              wx:if="{{item.status === 'pending_shipment'}}" 
+              class="btn {{item.can_remind_ship ? '' : 'is-muted'}}" 
+              size="mini" 
+              catchtap="handleRemindShip"
+              data-id="{{item.id}}"
+              data-can="{{item.can_remind_ship}}"
+            >{{item.remindText || '提醒发货'}}</button>
+
+            <!-- 待收货 -->
+            <button 
+              wx:if="{{item.status === 'pending_receipt'}}" 
+              class="btn primary" 
+              size="mini" 
+              catchtap="handleReceive" 
+              data-id="{{item.id}}"
+            >确认收货</button>
+
+            <!--
+              去评价。
+
+              ⚠️ 原来的条件是 `item.status === 'pending_evaluation'`，而后端在订单完成后
+              返回的 status 是 'completed'（见 OrderLegacyStatus.toLegacy）——
+              两边对不上，**这个按钮永远不会渲染，评价功能实际上不可达**。
+
+              现在改成用后端下发的 `reviewed` 字段判断：只要订单已完成且还没评价过就显示。
+              不能简单地写成 `status === 'completed'`：那样已评价过的订单还会显示按钮，
+              用户重复提交会撞 uk_order_product 唯一索引，看到一句看不懂的错误。
+
+              ⚠️ 同时移除了原来的「评价得 5 积分」气泡。
+              后端 PointsChangeTypeEnum 里**没有评价奖励这一类型**，实际不会发分 ——
+              界面上写着送积分而实际不送，比不写更糟。
+            -->
+            <block wx:if="{{item.status === 'completed' && !item.reviewed}}">
+              <view class="review-btn-wrapper">
+                <button 
+                  class="btn review-btn" 
+                  size="mini" 
+                  catchtap="handleReview" 
+                  data-id="{{item.id}}"
+                >去评价</button>
+              </view>
+            </block>
+
+            <!-- 申请维修 (仅在已完成页面显示) -->
+            <button 
+              wx:if="{{(item.status === 'completed' || item.status === 'pending_evaluation') && currentTab === 'completed'}}" 
+              class="btn" 
+              size="mini" 
+              catchtap="handleRepair" 
+              data-id="{{item.id}}"
+            >申请维修</button>
+
+             <!-- 查看详情 (在已完成页面显示，或非待评价状态) -->
+             <button 
+              wx:if="{{item.status === 'completed' || item.status === 'pending_evaluation'}}" 
+              class="btn" 
+              size="mini" 
+              catchtap="navToDetail"
+              data-id="{{item.id}}"
+            >查看详情</button>
+          </view>
+        </view>
+        </block>
+      </view>
+    </block>
+
+    <view wx:else class="empty-state">
+      <nqx-icon name="package" size="40" color="#d8dbe2" class="empty-icon" />
+      <text>暂无订单</text>
+    </view>
+  </scroll-view>
+</view>

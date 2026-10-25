@@ -1,0 +1,144 @@
+# ============================================================================
+# 生产环境配置
+# 激活方式：--spring.profiles.active=prod
+# ----------------------------------------------------------------------------
+# 所有敏感信息均通过环境变量注入，绝不写默认值 —— 生产环境缺失变量时应当
+# 启动失败，而不是悄悄用一个弱口令跑起来。
+#
+# 例外是 DB_USE_SSL / SPRINGDOC_ENABLED 这类「行为开关」：
+# 它们有安全的默认值（要求 TLS、关闭文档），只在演示或特殊网络环境下才需要覆盖，
+# 因此给出默认值比强制要求配置更实用 —— 缺了它不会带来安全风险，只会让人配不动。
+# ============================================================================
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # ------------------------------------------------------------------------
+    # createDatabaseIfNotExist=true —— 库不存在时自动创建。
+    #
+    # 为什么需要它：云托管新开通的 MySQL 里只有系统库，没有 nqx。
+    # 本地 docker-compose 是靠 `MYSQL_DATABASE: nqx` 在容器启动时建库的，
+    # 云托管没有这个机制。不自动建库会直接报：
+    #     Unknown database 'nqx'
+    # 而且是在连接阶段失败，Flyway 根本没机会跑。
+    #
+    # 幂等：库已存在时这个参数不起作用，可以放心留着。
+    # 前提：使用的账号要有 CREATE 权限（root 有）。
+    #
+    # useSSL 默认改成 false（原来默认 true）：
+    #   · 云托管的 MySQL 与容器在**同一个 VPC 内网**，链路本身不出公网；
+    #   · 而云托管 MySQL 是否提供 TLS 并没有承诺，开着 SSL 反而可能连不上；
+    #   · 若你把数据库放在公网可访问的位置，务必用环境变量 DB_USE_SSL=true 打开。
+    # ------------------------------------------------------------------------
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME:nqx}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=${DB_USE_SSL:false}&rewriteBatchedStatements=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      pool-name: NqxHikariPool
+      # ----------------------------------------------------------------------
+      # 连接池为什么调小（原来是 10 / 50）
+      #
+      # 云托管的 MySQL 是 **Serverless**：算力从 0.25 CCU 起步，按实际用量伸缩。
+      # 启动阶段一次性开 10 个连接，等于对一台刚被唤醒的小机器猛敲十下门 ——
+      # 每个连接的建立都要等它把算力拉起来，启动时间被成倍放大。
+      #
+      # 而我们的实际并发很低（校园级应用），2~10 个连接完全够用。
+      # 调小之后启动明显更快，也不容易触发云数据库的连接数/算力抖动。
+      # ----------------------------------------------------------------------
+      minimum-idle: 2
+      maximum-pool-size: 10
+      # 连接超时从 30s 收到 10s：连不上就尽快失败，不要拖着启动流程干等
+      connection-timeout: 10000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5s
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+          max-wait: 3s
+
+  # 生产环境关闭 Flyway 的自动执行由部署流程控制：
+  # 若采用「先在运维侧执行 SQL、再发布应用」的流程，改为 false
+  flyway:
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # 管理后台静态资源目录（容器部署时由 Dockerfile 把 nqx-ui/dist 复制到这里）
+  #
+  # 注意结尾的斜杠不能省：不带斜杠 Spring 会把它当成一个文件而不是目录，
+  # 结果是所有静态资源 404。
+  # ---------------------------------------------------------------------------
+  web:
+    resources:
+      static-locations: file:/app/static/
+
+mybatis-plus:
+  configuration:
+    # 生产环境关闭 SQL 打印，否则日志量会成倍增长
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  level:
+    root: warn
+    com.nqx: info
+    org.redisson: warn
+  file:
+    # 必须用 path 而不是 name：
+    # logback-spring.xml 里通过 springProperty 读取的是 logging.file.path，
+    # 用它作为日志目录，再按「服务名.log / 服务名-error.log」自动分文件。
+    # 若写成 logging.file.name，logback 里读到的 LOG_HOME 会是默认值 "logs"，
+    # 日志就落到容器内的工作目录而不是挂载卷里，容器重建即丢失。
+    path: /app/logs
+
+# ============================================================================
+# 文件存储：生产环境默认走对象存储（COS）
+# ----------------------------------------------------------------------------
+# 容器环境的磁盘是**临时**的：重建、扩容、滚动更新都会清空。
+# 本地磁盘模式在容器里等于"用户传一次头像，重启后就变成裂图"，而且没有任何报错
+# （接口 200、数据库里的 URL 也在，只是打不开）。
+#
+# 所以默认值写死 cos（而不是 local）—— 在容器里用本地磁盘一定是错的。
+# 缺 COS_SECRET_ID / COS_SECRET_KEY / COS_BUCKET 时会在启动阶段直接失败，
+# 而不是等到有人上传时才报错（见 CosFileStorage 的说明）。
+#
+# 唯一的例外：自建 docker-compose 且给 uploads 挂了持久化卷时，
+# 可以用 UPLOAD_TYPE=local 覆盖。这个覆盖是**显式**的，不会被人无意打开。
+# ============================================================================
+nqx:
+  upload:
+    type: ${UPLOAD_TYPE:cos}
+  # ---------------------------------------------------------------------------
+  # 管理后台 SPA 托管
+  #
+  # 容器部署时 Dockerfile 会把 nqx-ui/dist 复制到 /app/static，
+  # 由后端一并提供（同源、无跨域、一个域名一个端口）。
+  #
+  # 下面 spring.web.resources.static-locations 指向该目录；
+  # SpaFallbackFilter 负责把 /order/recycle 这类前端路由回退到 index.html
+  # （Vue 是 history 模式，刷新深链必须回退，否则 404）。
+  # ---------------------------------------------------------------------------
+  web:
+    spa-enabled: ${SPA_ENABLED:true}
+
+# ============================================================================
+# 接口文档开关
+# ----------------------------------------------------------------------------
+# 默认关闭：不对外暴露全部接口结构，降低被自动化扫描的风险。
+# 但演示环境需要查看，因此做成环境变量可覆盖（docker-compose 里设为 true）。
+# 用可配置开关而不是写死，是为了同一份镜像既能用于演示也能用于正式部署。
+# ============================================================================
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:false}
+  swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:false}

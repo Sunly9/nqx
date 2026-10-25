@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  订单 Mapper XML
+  ============================================================================
+  手写 SQL 必须自己带 `o.deleted = 0` ——
+  MyBatis-Plus 的逻辑删除只作用于它自动生成的 SQL。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.BizOrderMapper">
+
+    <!--
+      后台订单多条件分页检索。
+
+      几个刻意的设计：
+
+      1) 用户表的 deleted 条件写在 ON 里而不是 WHERE 里
+         这是 LEFT JOIN 的经典陷阱。若写在 WHERE 里：
+             LEFT JOIN app_user u ON u.id = o.user_id
+             WHERE o.deleted = 0 AND u.deleted = 0
+         那么"用户已被删除、但订单还在"的历史订单会整行消失。
+         写在 ON 里则只影响能否取到昵称（取不到就是 NULL），订单本身仍在。
+         对后台审计而言，订单消失比昵称缺失严重得多。
+
+      2) 昵称模糊查询用 u.nickname LIKE CONCAT('%', #{}, '%')
+         而不是 o.user_id IN (SELECT ...)：
+         子查询在数据量大时可能被优化成全表扫描，而 JOIN 能走索引。
+
+      3) 时间范围用 `>=` 与 `<=` 而不是 BETWEEN
+         两者语义相同，但显式写法在阅读时更清楚边界是闭区间，
+         也便于将来改成开区间时不用重写整句。
+
+      4) ORDER BY 补了 o.id 作为最终排序键
+         只按 create_time 排序时，同一秒提交的订单顺序不确定，
+         翻页会出现"第 2 页重复出现第 1 页某条、另一条怎么都翻不到"。
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.vo.order.AdminOrderVO">
+        SELECT o.id,
+               o.order_no,
+               o.user_id,
+               u.nickname,
+               o.order_type,
+               o.recycle_method,
+               o.status,
+               o.estimated_weight,
+               o.actual_weight,
+               o.total_points,
+               o.carbon_saved,
+               o.contact_name,
+               o.contact_phone,
+               o.courier_no,
+               o.remind_ship_at,
+               o.remind_ship_count,
+               o.create_time,
+               o.finish_time
+        FROM biz_order o
+                 LEFT JOIN app_user u
+                           ON u.id = o.user_id AND u.deleted = 0
+        <where>
+            o.deleted = 0
+            <if test="query.orderNo != null and query.orderNo != ''">
+                AND o.order_no LIKE CONCAT('%', #{query.orderNo}, '%')
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                AND u.nickname LIKE CONCAT('%', #{query.nickname}, '%')
+            </if>
+            <if test="query.userId != null">
+                AND o.user_id = #{query.userId}
+            </if>
+            <if test="query.orderType != null">
+                AND o.order_type = #{query.orderType}
+            </if>
+            <if test="query.status != null">
+                AND o.status = #{query.status}
+            </if>
+            <if test="query.recycleMethod != null and query.recycleMethod != ''">
+                AND o.recycle_method = #{query.recycleMethod}
+            </if>
+            <if test="query.startTime != null">
+                AND o.create_time &gt;= #{query.startTime}
+            </if>
+            <if test="query.endTime != null">
+                AND o.create_time &lt;= #{query.endTime}
+            </if>
+            <if test="query.minPoints != null">
+                AND o.total_points &gt;= #{query.minPoints}
+            </if>
+            <if test="query.maxPoints != null">
+                AND o.total_points &lt;= #{query.maxPoints}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC, o.id DESC
+    </select>
+
+</mapper>

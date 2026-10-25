@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  后台权限 Mapper XML
+  ============================================================================
+  所有手写 SQL 均显式带 `deleted = 0` 与 `status = 1`。
+  原因见 SysRoleMapper.xml 的说明：MyBatis-Plus 的逻辑删除不作用于手写 SQL。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.SysPermissionMapper">
+
+    <!--
+      查询某管理员的全部权限码（含按钮级，如 order:recycle:audit）。
+
+      为什么权限码对应多个角色时要 DISTINCT？
+      一个管理员可能同时拥有多个角色，两个角色都被授予了同一个权限，
+      INNER JOIN 会产生重复行。虽然 Sa-Token 内部用 List.contains 判断，
+      重复不影响正确性，但会白占内存与网络传输，且让日志难以阅读。
+
+      权限码为空的行必须排除：目录/菜单若未配 perm_code，
+      NULL 会被当成一个"权限码"塞进集合，而 `perm_code <> ''` 的条件
+      正是为了过滤掉这种空值。
+    -->
+    <select id="selectPermCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT p.perm_code
+        FROM sys_permission p
+                 INNER JOIN sys_role_permission rp ON rp.permission_id = p.id
+                 INNER JOIN sys_role r ON r.id = rp.role_id
+                 INNER JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND p.status = 1
+          AND p.deleted = 0
+          AND r.status = 1
+          AND r.deleted = 0
+          AND p.perm_code IS NOT NULL
+          AND p.perm_code &lt;&gt; ''
+        ORDER BY perm_code
+    </select>
+
+    <!--
+      查询某管理员可见的菜单树节点（目录 + 菜单，不含按钮）。
+      perm_type: 1目录 2菜单 3按钮 —— 按钮不参与菜单渲染，
+      其权限码由上面的方法单独提供，交给前端 v-permission 指令做按钮级控制。
+      visible = 1 过滤掉「隐藏菜单」：这类页面（如详情页）需要路由但不显示在侧边栏。
+    -->
+    <select id="selectMenusByUserId" resultType="com.nqx.pojo.entity.SysPermission">
+        SELECT DISTINCT p.id,
+                        p.parent_id,
+                        p.perm_name,
+                        p.perm_code,
+                        p.perm_type,
+                        p.path,
+                        p.component,
+                        p.icon,
+                        p.sort,
+                        p.visible,
+                        p.status
+        FROM sys_permission p
+                 INNER JOIN sys_role_permission rp ON rp.permission_id = p.id
+                 INNER JOIN sys_role r ON r.id = rp.role_id
+                 INNER JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND p.perm_type IN (1, 2)
+          AND p.visible = 1
+          AND p.status = 1
+          AND p.deleted = 0
+          AND r.status = 1
+          AND r.deleted = 0
+        ORDER BY p.parent_id, p.sort
+    </select>
+
+    <!--
+      查询全部启用的权限节点，供「角色分配权限」页面渲染完整权限树。
+      这里返回按钮节点，因为分配权限时需要勾选到按钮级。
+    -->
+    <select id="selectAllEnabled" resultType="com.nqx.pojo.entity.SysPermission">
+        SELECT id,
+               parent_id,
+               perm_name,
+               perm_code,
+               perm_type,
+               path,
+               component,
+               icon,
+               sort,
+               visible,
+               status
+        FROM sys_permission
+        WHERE status = 1
+          AND deleted = 0
+        ORDER BY parent_id, sort
+    </select>
+
+</mapper>

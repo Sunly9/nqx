@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  商品评价 Mapper XML
+  ============================================================================
+  手写 SQL 必须自己带 `deleted = 0`：
+  MyBatis-Plus 的逻辑删除只作用于它自动生成的 SQL，
+  漏了会让已删除的评价继续计入平均分 —— 运营把一条差评删掉后
+  发现评分没变，会以为删除没生效。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.ProductReviewMapper">
+
+    <!--
+      评分概况。
+
+      三件事在一条 SQL 里算完，避免查三次：
+        · totalRating  总星数（用于算平均分）
+        · reviewCount  评价条数
+        · goodCount    好评数（4 星及以上）
+
+      平均分用 ROUND(..., 1) 保留一位小数，直接按展示精度返回 ——
+      让前端做四舍五入容易和后端算法不一致（银行家舍入 vs 四舍五入）。
+
+      注意 AVG 在无数据时返回 NULL，用 IFNULL 兜底成 0，
+      否则 Java 侧反序列化到 BigDecimal 会拿到 null，前端显示空白。
+
+      状态条件 status = 1：只统计"显示中"的评价。
+      被隐藏（可能是刷的好评、也可能是恶意的差评）的不参与评分。
+    -->
+    <select id="selectRatingStats" resultType="java.util.Map">
+        SELECT IFNULL(ROUND(AVG(rating), 1), 0)                                  AS avgRating,
+               COUNT(*)                                                          AS reviewCount,
+               IFNULL(SUM(CASE WHEN rating &gt;= 4 THEN 1 ELSE 0 END), 0)        AS goodCount,
+               IFNULL(SUM(rating), 0)                                            AS totalRating
+        FROM product_review
+        WHERE product_id = #{productId}
+          AND status = 1
+          AND deleted = 0
+    </select>
+
+</mapper>

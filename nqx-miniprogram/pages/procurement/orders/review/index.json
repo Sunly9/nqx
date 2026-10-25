@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "发表评价",
+  "usingComponents": {
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

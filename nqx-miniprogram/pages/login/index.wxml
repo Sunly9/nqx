@@ -1,0 +1,69 @@
+<view class="container login-container">
+  <view class="header">
+    <image class="brand-logo" src="/assets/logo.png" mode="widthFix"></image>
+    <view class="title">纽启新生</view>
+    <view class="subtitle">废旧纽扣锂电池回收与资源化利用平台</view>
+  </view>
+
+  <view class="role-selection">
+    <view class="role-card lab" bindtap="onSelectRole" data-type="lab">
+      <nqx-icon name="flask" size="30" color="#ffffff" class="icon-box" />
+      <view class="role-title">实验室/研究所用户</view>
+      <view class="role-desc">电池回收 · 积分奖励 · 环保合规</view>
+    </view>
+
+    <view class="role-card procurement" bindtap="onSelectRole" data-type="procurement">
+      <nqx-icon name="cart" size="30" color="#ffffff" class="icon-box" />
+      <view class="role-title">采购端用户</view>
+      <view class="role-desc">设备采购 · 订单管理 · 售后服务</view>
+    </view>
+  </view>
+  
+  <view class="footer">
+    <text>登录即代表同意《用户协议》与《隐私政策》</text>
+  </view>
+
+  <!-- Modal Mask -->
+  <view class="modal-mask" wx:if="{{showLoginModal}}" bindtap="closeModal"></view>
+  
+  <!-- Step 1: Login Method Selection -->
+  <view class="login-modal" wx:if="{{showLoginModal && step === 1}}">
+    <view class="modal-title">欢迎登录</view>
+    <view class="modal-desc">请选择登录方式继续使用</view>
+    
+    <button class="btn-login wechat" bindtap="handleCheckLogin">
+      <nqx-icon name="message" size="18" color="#ffffff" class="btn-icon" /> 微信一键登录
+    </button>
+    
+    <button class="btn-login phone" open-type="getPhoneNumber" bindgetphonenumber="handlePhoneLogin">
+      <nqx-icon name="smartphone" size="18" color="#333333" class="btn-icon" /> 手机号登录
+    </button>
+    
+    <view class="btn-cancel" bindtap="closeModal">取消</view>
+  </view>
+
+  <!-- Step 2: Fill Profile (New) -->
+  <view class="login-modal profile-modal" wx:if="{{showLoginModal && step === 2}}">
+    <view class="modal-title">完善信息</view>
+    <view class="modal-desc">请设置您的头像和昵称</view>
+    
+    <view class="profile-form">
+      <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+        <image class="avatar" src="{{tempAvatarUrl || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}" mode="aspectFill"></image>
+        <nqx-icon name="camera" size="16" color="#ffffff" class="edit-icon" />
+      </button>
+      
+      <view class="input-group">
+        <view class="label">昵称</view>
+        <input type="nickname" class="nickname-input" placeholder="请输入昵称" bindchange="onNicknameChange" bindinput="onNicknameInput" />
+      </view>
+    </view>
+
+    <button class="btn-login primary" bindtap="handleFinalLogin">
+      进入纽启新生
+    </button>
+    
+    <view class="btn-cancel" bindtap="backToStep1">返回上一步</view>
+  </view>
+
+</view>

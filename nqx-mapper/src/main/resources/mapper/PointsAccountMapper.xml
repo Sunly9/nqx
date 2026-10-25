@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  积分账户 Mapper XML
+  ============================================================================
+  这里是整个项目里「并发安全」最核心的两条 SQL。
+
+  注意：points_account 表**没有 deleted 列**（账户不做逻辑删除），
+  所以本文件里的 SQL 不带 deleted = 0 条件 ——
+  "手写 SQL 必须自带 deleted = 0" 这条约定只适用于有该列的表，
+  盲目套用会直接报 Unknown column 错误。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.PointsAccountMapper">
+
+    <!--
+      条件扣减积分。
+
+      核心在于 WHERE 子句里的 `balance >= #{points}`：
+      它把「余额够不够」的判断和「扣减」放进了同一条 SQL。
+      InnoDB 执行时会锁住这一行，并发事务只能串行执行：
+        事务 A 扣完提交后，事务 B 再次判断 balance >= points 时
+        看到的是已扣减的值，若不满足则 affectedRows = 0，扣减失败。
+
+      相比「先 SELECT 再判断再 UPDATE」的三步写法，
+      这里没有竞态窗口，也少一次数据库往返。
+
+      version 字段每次自增，用于需要乐观锁的其它更新场景
+      （以及排查时判断这行被改过多少次）。
+    -->
+    <update id="deductPoints">
+        UPDATE points_account
+        SET balance     = balance - #{points},
+            total_spend = total_spend + #{points},
+            version     = version + 1
+        WHERE user_id = #{userId}
+          AND balance &gt;= #{points}
+    </update>
+
+    <!--
+      增加积分。
+
+      加了 `AND #{points} &gt; 0` 这个看似多余的守卫，原因很实在：
+      调用方若误传了负数（例如把"扣分"的参数传进了加分方法），
+      没有这个条件时就会变成"加分接口把余额扣掉"，
+      而且 total_earn 还会同步增加 —— 数据会同时错两个地方，极难发现。
+      在 SQL 层加一道守卫，让这种调用静默失败而不是悄悄损坏数据。
+
+      余额溢出同理：balance 是 INT，若有异常大的值传入会溢出成负数，
+      因此加了上界保护。
+    -->
+    <update id="addPoints">
+        UPDATE points_account
+        SET balance    = balance + #{points},
+            total_earn = total_earn + #{points},
+            version    = version + 1
+        WHERE user_id = #{userId}
+          AND #{points} &gt; 0
+          AND balance &lt;= 2000000000 - #{points}
+    </update>
+
+    <!--
+      加行锁读取账户。
+
+      FOR UPDATE 会给这一行加排他锁，直到事务提交才释放。
+      这保证了「读余额 → 算变动后余额 → 写流水 → 改余额」这个序列
+      在同一个用户维度上是串行的，balance_after 不会算错。
+
+      注意：FOR UPDATE 必须在事务中执行，否则锁会立即释放、形同虚设。
+      调用方 PointsService.change() 上有 @Transactional 保证这一点。
+    -->
+    <select id="selectForUpdate" resultType="com.nqx.pojo.entity.PointsAccount">
+        SELECT id,
+               user_id,
+               balance,
+               total_earn,
+               total_spend,
+               version,
+               create_time,
+               update_time
+        FROM points_account
+        WHERE user_id = #{userId}
+            FOR UPDATE
+    </select>
+
+    <!--
+      后台积分账户多条件检索。
+
+      points_account 没有 deleted 列（账户与用户一对一，用户被删时账户随之失效），
+      所以本查询不带 deleted 条件；但 JOIN 的 app_user 有，写在 ON 里。
+
+      排序用 balance DESC：运营看积分账户列表，最关心的是"谁积分特别多"
+      （可能是刷的，也可能是大客户），按余额倒序一眼就能看到。
+      补 id 作为最终排序键，避免同余额时分页出现重复或漏项。
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.vo.order.AdminPointsAccountVO">
+        SELECT a.id,
+               a.user_id,
+               u.nickname,
+               u.avatar_url,
+               a.balance,
+               a.total_earn,
+               a.total_spend,
+               a.create_time,
+               a.update_time
+        FROM points_account a
+                 LEFT JOIN app_user u
+                           ON u.id = a.user_id AND u.deleted = 0
+        <where>
+            <if test="query.userId != null">
+                AND a.user_id = #{query.userId}
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                AND u.nickname LIKE CONCAT('%', #{query.nickname}, '%')
+            </if>
+            <if test="query.startDate != null">
+                AND a.create_time &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND a.create_time &lt; DATE_ADD(#{query.endDate}, INTERVAL 1 DAY)
+            </if>
+        </where>
+        ORDER BY a.balance DESC, a.id DESC
+    </select>
+
+</mapper>

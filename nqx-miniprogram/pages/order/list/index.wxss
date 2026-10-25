@@ -1,0 +1,171 @@
+.container {
+  background: #f5f5f5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  background: #fff;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #1989fa;
+  font-weight: bold;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 4rpx;
+  background: #1989fa;
+  border-radius: 2rpx;
+}
+
+.order-list {
+  flex: 1;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.order-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f9f9f9;
+}
+
+.order-status {
+  color: #1989fa;
+}
+
+.order-content {
+  margin-bottom: 20rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.points {
+  color: #ffaa00;
+  font-weight: bold;
+}
+
+/*
+ * 订单进度提示。
+ *
+ * 放在浅色底块里、字号比正文小一号：
+ *   · 它是"说明"不是"操作"，视觉权重必须低于按钮；
+ *   · 但又不能淡到看不见 —— 用户得靠它知道现在在等谁做什么。
+ *
+ * 左边加一条竖线，让它看起来像"状态条"而不是一段普通文字。
+ */
+.order-hint {
+  margin-top: 14rpx;
+  padding: 12rpx 16rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #666;
+  background: #f7f8fa;
+  border-left: 6rpx solid #c8d0da;
+  border-radius: 6rpx;
+}
+
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.prod-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 20rpx;
+}
+
+.total-row {
+  text-align: right;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-top: 10rpx;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f9f9f9;
+  /* 允许内容换行 */
+  flex-wrap: wrap; 
+}
+
+.order-time {
+  font-size: 24rpx;
+  color: #999;
+  /* 如果时间过长，可以换行，并且留出下边距 */
+  margin-right: 20rpx; 
+  /* 当发生换行时，时间会在上面，保留一点距离 */
+  margin-bottom: 10rpx; 
+}
+
+.btn-group {
+  display: flex;
+  /* 禁止按钮组被压缩 */
+  flex-shrink: 0;
+  /* 确保按钮组在换行后能靠右对齐 */
+  margin-left: auto; 
+}
+
+.mini-btn {
+  margin-left: 20rpx;
+  font-weight: normal;
+  white-space: nowrap; /* 按钮文字禁止换行 */
+}
+
+.mini-btn.primary {
+  background: #1989fa;
+  color: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  padding-top: 200rpx;
+  color: #999;
+  font-size: 28rpx;
+}

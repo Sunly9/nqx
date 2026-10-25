@@ -1,0 +1,235 @@
+.login-container {
+  padding: 60rpx 40rpx;
+  background-color: #fff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 80rpx;
+  text-align: center;
+}
+
+.brand-logo {
+  width: 180rpx;
+  height: auto;
+  margin: 0 auto 24rpx;
+  filter: drop-shadow(0 8rpx 20rpx rgba(0, 0, 0, 0.08));
+  display: block;
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.role-selection {
+  width: 100%;
+}
+
+.role-card {
+  width: 100%;
+  padding: 40rpx;
+  border-radius: 20rpx;
+  margin-bottom: 40rpx;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.role-card:active {
+  transform: scale(0.98);
+}
+
+.role-card.lab {
+  background: linear-gradient(135deg, #07c160 0%, #3cc51f 100%);
+}
+
+.role-card.procurement {
+  background: linear-gradient(135deg, #1989fa 0%, #5ca9ff 100%);
+}
+
+.icon-box {
+  /* 原来是 64rpx 的 emoji；现在由 nqx-icon 的 size="30" 决定尺寸 */
+  margin-bottom: 20rpx;
+}
+
+.role-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.role-desc {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.footer {
+  margin-top: auto;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+  position: absolute;
+  bottom: 40rpx;
+  width: 100%;
+  left: 0;
+}
+
+/* Modal Styles */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.login-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 60rpx 40rpx;
+  box-sizing: border-box;
+  z-index: 101;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 16rpx;
+  color: #333;
+}
+
+.modal-desc {
+  font-size: 28rpx;
+  color: #999;
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.btn-login {
+  width: 100%;
+  height: 100rpx;
+  /* 移除 line-height，避免与 flex 布局冲突导致重叠 */
+  border-radius: 50rpx;
+  font-size: 32rpx;
+  margin-bottom: 30rpx;
+  border: none;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0; /* 清除默认内边距 */
+}
+
+.btn-login.wechat {
+  background: linear-gradient(135deg, #07c160 0%, #3cc51f 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 20rpx rgba(7, 193, 96, 0.3);
+}
+
+.btn-login.phone {
+  background-color: #fff;
+  color: #333;
+  border: 2rpx solid #eee;
+}
+
+.btn-icon {
+  margin-right: 16rpx;
+  /* 尺寸与颜色交给 nqx-icon（size="18"），按钮文字没有行高问题，
+     但图标是 inline-block，靠 nqx-icon 自带的 vertical-align:middle 对齐 */
+}
+
+.btn-login.primary {
+  background-color: #07c160;
+  color: #fff;
+}
+
+.btn-cancel {
+  text-align: center;
+  font-size: 28rpx;
+  color: #999;
+  padding: 20rpx;
+}
+
+/* Profile Form Styles */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+.avatar-wrapper {
+  padding: 0;
+  width: 160rpx !important;
+  height: 160rpx !important;
+  border-radius: 50%;
+  margin-bottom: 40rpx;
+  background-color: #f7f8fa;
+  position: relative;
+  overflow: visible;
+}
+
+.avatar {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(0,0,0,0.5);
+  /* 尺寸与颜色交给 nqx-icon（size="16" color="#ffffff"） */
+  padding: 8rpx;
+  border-radius: 50%;
+}
+
+.input-group {
+  width: 100%;
+  background: #f7f8fa;
+  padding: 20rpx 30rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 30rpx;
+  color: #333;
+  width: 100rpx;
+}
+
+.nickname-input {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  height: 60rpx;
+}

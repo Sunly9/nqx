@@ -1,0 +1,178 @@
+.container {
+  padding: 20rpx;
+  padding-bottom: 120rpx;
+}
+
+.form-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.form-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  padding-left: 16rpx;
+  border-left: 8rpx solid var(--green);
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  width: 180rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.select-btn {
+  font-size: 24rpx;
+  color: #07c160;
+  border: 1rpx solid #07c160;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  margin-left: 10rpx;
+}
+
+.textarea {
+  flex: 1;
+  height: 100rpx;
+  font-size: 28rpx;
+}
+
+.picker {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.divider {
+  height: 1rpx;
+  background: #eee;
+  margin: 20rpx 0;
+}
+
+.fee-row.total {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.total-price {
+  color: #ff4d4f;
+}
+
+.footer-btn {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 110rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.price-info {
+  font-size: 28rpx;
+}
+
+.price {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #ff4d4f;
+}
+
+.btn {
+  width: 240rpx;
+  margin: 0;
+}
+
+/* ============================================================================
+   费用与奖励说明
+
+   替代了原来的「费用明细」（上门费 + 处理费 + 总价）。
+   上门回收免费，所以这里不再有金额，改成一句说明 + 积分奖励的提示。
+   ============================================================================ */
+.fee-note {
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: #333333;
+}
+
+/* 「免费」两个字用绿色小标签，比写"¥0.00"更能让人一眼确认不被收费 */
+.free-tag {
+  display: inline-block;
+  margin: 0 6rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 6rpx;
+  background: #f0fdf4;
+  color: #07c160;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.reward-note {
+  color: #666666;
+  font-size: 26rpx;
+}
+
+.strong {
+  color: #333333;
+  font-weight: 600;
+}
+
+/* ============================================================================
+   预计积分预览
+
+   放在"预估重量"下面，让用户在提交前就知道这一单大概能换多少分。
+   没有这块时，用户只能等结算后才知道结果 —— 而积分恰恰是这个平台的核心激励。
+   ============================================================================ */
+.points-preview {
+  margin-top: 8rpx;
+  padding: 20rpx 24rpx;
+  background: #f0fdf4;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.points-value {
+  margin: 0 8rpx;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #07c160;
+}
+
+.points-hint {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #999999;
+}

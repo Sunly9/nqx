@@ -1,0 +1,32 @@
+<view class="container">
+  <block wx:if="{{reviews.length > 0}}">
+    <view class="review-item" wx:for="{{reviews}}" wx:key="id">
+      <view class="review-header">
+        <image class="avatar" src="{{item.avatar_url || '/assets/default_avatar.png'}}" mode="aspectFill"></image>
+        <view class="user-info">
+          <text class="nickname">{{item.nickname || '匿名用户'}}</text>
+          <view class="stars-row">
+              <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="s" class="star-s {{s <= item.rating ? 'active' : ''}}">★</text>
+          </view>
+        </view>
+        <text class="date">{{item.formattedDate}}</text>
+      </view>
+      <view class="review-content">{{item.content}}</view>
+      <view class="review-images" wx:if="{{item.images && item.images.length > 0}}">
+        <image 
+          wx:for="{{item.images}}" 
+          wx:key="*this" 
+          wx:for-item="img" 
+          src="{{img}}" 
+          mode="aspectFill"
+          bindtap="previewImage"
+          data-src="{{img}}"
+          data-list="{{item.images}}"
+        ></image>
+      </view>
+    </view>
+  </block>
+  <view class="empty-reviews" wx:else>
+    暂无评价
+  </view>
+</view>

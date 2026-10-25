@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  答题记录 Mapper XML
+  ============================================================================
+  user_answer 是「只追加」的事实表，**没有 deleted 列**，
+  因此本文件对 a 表不带 deleted 条件 —— 对没有该列的表盲加会报 Unknown column。
+  但 JOIN 的 app_user 与 question 都有 deleted，必须带上（写在 ON 里，见下方说明）。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.UserAnswerMapper">
+
+    <!--
+      后台答题记录多条件检索。
+
+      三个 LEFT JOIN 的理由与写法：
+      1. 必须用 LEFT 而不是 INNER：答题记录是积分发放的事实依据，
+         即便用户被删、题目被删，这条记录也必须留在列表里（宁可昵称显示空）。
+         INNER JOIN 会让"用户已删除"的历史记录整行消失 —— 账目类的数据不能这样丢。
+      2. `u.deleted = 0` 与 `q.deleted = 0` 写在 ON 里而不是 WHERE 里：
+         WHERE 是对 JOIN 结果集的过滤，会把 LEFT JOIN 退化成 INNER JOIN，
+         正是第 1 点要避免的后果（详见 docs/06-踩坑记录.md 第 13 条）。
+         写在 ON 里则只影响能否取到昵称/题干，记录本身仍在。
+      3. 题干用 q.content：题目被逻辑删除后取不到，列表会显示空，
+         管理员据此可以看出"这题已被删"，比整行消失有用得多。
+
+      时间范围用 `>= startDate` 与 `< endDate + 1 天`：
+      question_date 是 DATE，但 create_time 是 DATETIME。
+      这里按 question_date 筛选（运营口径是"哪一天的答题"），
+      同时用下闭区间写法，保证"选了 10-15 就包含 10-15 一整天"。
+
+      排序：答题时间倒序 + id 倒序。
+      补 id 是必需的 —— 同一天会有大量相同 create_time 的记录，
+      只按 create_time 排序时 MySQL 不保证稳定顺序，翻页会重复或漏项。
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.vo.question.AdminUserAnswerVO">
+        SELECT a.id,
+               a.user_id,
+               u.nickname,
+               a.question_id,
+               q.content AS questionContent,
+               q.correct_answer AS correctAnswer,
+               a.question_date,
+               a.user_answer,
+               a.is_correct,
+               a.gain_points,
+               a.cost_time,
+               a.create_time
+        FROM user_answer a
+                 LEFT JOIN app_user u
+                           ON u.id = a.user_id AND u.deleted = 0
+                 LEFT JOIN question q
+                           ON q.id = a.question_id AND q.deleted = 0
+        <where>
+            <if test="query.userId != null">
+                AND a.user_id = #{query.userId}
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                AND u.nickname LIKE CONCAT('%', #{query.nickname}, '%')
+            </if>
+            <if test="query.questionId != null">
+                AND a.question_id = #{query.questionId}
+            </if>
+            <if test="query.isCorrect != null">
+                AND a.is_correct = #{query.isCorrect}
+            </if>
+            <if test="query.startDate != null">
+                AND a.question_date &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND a.question_date &lt;= #{query.endDate}
+            </if>
+        </where>
+        ORDER BY a.create_time DESC, a.id DESC
+    </select>
+
+</mapper>

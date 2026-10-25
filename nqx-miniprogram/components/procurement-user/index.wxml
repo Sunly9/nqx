@@ -1,0 +1,90 @@
+<view class="container">
+  <view class="user-card" style="background: linear-gradient(135deg, #1989fa 0%, #5ca9ff 100%)">
+    <view class="avatar-box">
+      <image class="avatar" src="{{userInfo.avatar_url || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}" mode="aspectFill"></image>
+    </view>
+    <view class="info-box">
+      <view class="nickname">{{userInfo.nickname || '采购用户'}}</view>
+      <view class="role-tag">采购端</view>
+    </view>
+  </view>
+
+  <!-- 我的订单 -->
+  <view class="orders-card">
+    <view class="orders-header" bindtap="navToOrder" data-status="all">
+      <text class="orders-title">我的订单</text>
+      <view class="orders-more">
+        <text>全部</text>
+        <view class="arrow">></view>
+      </view>
+    </view>
+    <view class="orders-grid">
+      <view class="order-item" bindtap="navToOrder" data-status="pending_payment">
+        <nqx-icon name="credit-card" size="24" color="#8a8f99" class="order-icon" />
+        <text class="order-label">待付款</text>
+      </view>
+      <view class="order-item" bindtap="navToOrder" data-status="pending_shipment">
+        <nqx-icon name="package" size="24" color="#8a8f99" class="order-icon" />
+        <text class="order-label">待发货</text>
+      </view>
+      <view class="order-item" bindtap="navToOrder" data-status="pending_receipt">
+        <nqx-icon name="truck" size="24" color="#8a8f99" class="order-icon" />
+        <text class="order-label">待收货</text>
+      </view>
+      <view class="order-item" bindtap="navToOrder" data-status="pending_evaluation">
+        <nqx-icon name="message" size="24" color="#8a8f99" class="order-icon" />
+        <text class="order-label">待评价</text>
+      </view>
+      <view class="order-item" bindtap="navToOrder" data-status="refund">
+        <nqx-icon name="wallet" size="24" color="#8a8f99" class="order-icon" />
+        <text class="order-label">退款/售后</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-item" bindtap="navToEditProfile">
+      <view class="menu-left">
+        <nqx-icon name="edit" size="18" color="#8a8f99" class="menu-icon" />
+        <text>完善个人信息</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+
+
+    <view class="menu-item" bindtap="navToPoints">
+      <view class="menu-left">
+        <nqx-icon name="gift" size="18" color="#8a8f99" class="menu-icon" />
+        <text>积分中心</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <view class="menu-item" bindtap="navToAddress">
+      <view class="menu-left">
+        <nqx-icon name="map-pin" size="18" color="#8a8f99" class="menu-icon" />
+        <text>地址管理</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <button class="menu-item contact-btn" open-type="contact">
+      <view class="menu-left">
+        <nqx-icon name="headphones" size="18" color="#8a8f99" class="menu-icon" />
+        <text>联系客服</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </button>
+    
+    <view class="menu-item" bindtap="navToHelp">
+      <view class="menu-left">
+        <nqx-icon name="help" size="18" color="#8a8f99" class="menu-icon" />
+        <text>帮助中心</text>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+  </view>
+
+  <view class="logout-btn" bindtap="handleLogout">退出登录</view>
+</view>

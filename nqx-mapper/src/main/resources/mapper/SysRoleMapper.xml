@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  后台角色 Mapper XML
+  ============================================================================
+  注意：手写 SQL 必须自己带上 `deleted = 0`。
+  MyBatis-Plus 的逻辑删除（@TableLogic）只对它自动生成的 SQL 生效，
+  手写 XML 里 MyBatis-Plus 完全不介入。漏写会导致已删除的角色/权限仍被查出，
+  是使用 MyBatis-Plus 时最典型的一类 bug。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.SysRoleMapper">
+
+    <!--
+      查询管理员的角色标识集合。
+      INNER JOIN 链：管理员 → 角色关联 → 角色，同时校验角色本身是启用且未删除的。
+      仅在登录时调用一次，结果写入 Sa-Token 会话复用。
+    -->
+    <select id="selectRoleCodesByUserId" resultType="java.lang.String">
+        SELECT r.role_code
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND r.status = 1
+          AND r.deleted = 0
+        ORDER BY r.sort
+    </select>
+
+</mapper>

@@ -1,0 +1,219 @@
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 120rpx;
+}
+
+/* Status Header */
+.status-header {
+  background: linear-gradient(135deg, #1989fa 0%, #5ca9ff 100%);
+  color: #fff;
+  padding: 40rpx 40rpx 80rpx; /* Extra padding at bottom for overlap */
+  display: flex;
+  align-items: center;
+}
+
+.status-icon {
+  /* 原来是 emoji，靠 60rpx 字号撑开；现在由 nqx-icon 的 size="30" 决定尺寸 */
+  margin-right: 30rpx;
+}
+
+.main-status {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.sub-status {
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+/* Card Common */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 0 20rpx 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.05);
+}
+
+/* Address Card */
+.address-card {
+  margin-top: -40rpx; /* Overlap with header */
+  display: flex;
+  align-items: center;
+}
+
+.addr-icon {
+  /* 尺寸与颜色都交给 nqx-icon（size="20" color="#1989fa"） */
+  margin-right: 20rpx;
+}
+
+.addr-content {
+  flex: 1;
+}
+
+.addr-user {
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+  color: #333;
+}
+
+.addr-user .phone {
+  margin-left: 20rpx;
+  font-weight: normal;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.addr-detail {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Product Card */
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f9f9f9;
+}
+
+.product-item {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+
+.prod-img {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 8rpx;
+  background: #eee;
+  margin-right: 20rpx;
+}
+
+.prod-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.prod-name {
+  font-size: 28rpx;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prod-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prod-price {
+  font-size: 30rpx;
+  font-weight: bold;
+}
+
+.prod-count {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.total-row {
+  border-top: 1rpx solid #f9f9f9;
+  padding-top: 20rpx;
+  text-align: right;
+  font-size: 28rpx;
+}
+
+.total-price {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1989fa;
+  margin-left: 10rpx;
+}
+
+/* Info Card */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 26rpx;
+  margin-bottom: 16rpx;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  color: #999;
+}
+
+.value {
+  color: #333;
+}
+
+/* Footer */
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+}
+
+.btn {
+  margin-left: 20rpx;
+  font-size: 26rpx;
+  padding: 0 34rpx;
+  line-height: 60rpx;
+  height: 60rpx;
+  border-radius: 30rpx;
+  background: #fff;
+  border: 1rpx solid #ddd;
+  color: #666;
+}
+
+.btn.primary {
+  background: #1989fa;
+  color: #fff;
+  border: none;
+}
+
+/* Loading */
+.loading {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid #eee;
+  border-top-color: #1989fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

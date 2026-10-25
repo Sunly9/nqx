@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "实验室回收中心",
+  "navigationBarBackgroundColor": "#07c160",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

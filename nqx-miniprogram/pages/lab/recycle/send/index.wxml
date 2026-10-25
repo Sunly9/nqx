@@ -1,0 +1,81 @@
+<view class="container">
+  <view class="form-card">
+    <view class="form-title">寄件信息</view>
+    
+    <view class="form-item">
+      <view class="label">联系人</view>
+      <input class="input" placeholder="请输入联系人姓名" model:value="{{contact}}" />
+    </view>
+    
+    <view class="form-item">
+      <view class="label">联系电话</view>
+      <input class="input" type="number" placeholder="请输入手机号码" model:value="{{phone}}" />
+    </view>
+    
+    <view class="form-item">
+      <view class="label">寄件地址</view>
+      <textarea class="textarea" placeholder="请输入详细地址" model:value="{{address}}" />
+    </view>
+
+    <!--
+      电池品类。
+
+      原来这里没有这一项，于是 recycle_category_id 永远为空，
+      后端一律按默认 100 积分/kg 结算 —— 交氧化银（180/kg）的用户会拿到偏低的分。
+      现在让用户自己选，并在下方实时显示"预计可得积分"，让价格透明。
+    -->
+    <view class="form-item">
+      <view class="label">电池品类</view>
+      <picker bindchange="bindCategoryChange" value="{{categoryIndex}}" range="{{categories}}" range-key="name">
+        <view class="picker">
+          {{categoryIndex >= 0 ? categoryName : '请选择电池品类'}} ▾
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="label">预估重量 (kg)</view>
+      <input class="input" type="digit" placeholder="最大不超过 2kg" model:value="{{weight}}" bindinput="checkWeight" />
+    </view>
+
+    <view class="warning-text" wx:if="{{weightError}}">
+      ⚠️ 重量超过 2kg，请选择上门回收服务
+    </view>
+
+    <!-- 预计积分：按 品类单价 × 预估重量 计算，与后端结算口径一致（向下取整） -->
+    <view class="points-preview" wx:if="{{categoryIndex >= 0 && estimatedPoints > 0}}">
+      <text>按 {{pointsPerKg}} 积分/kg 估算，约可得</text>
+      <text class="points-value">{{estimatedPoints}}</text>
+      <text>积分</text>
+      <view class="points-hint">最终以工作人员现场称重后的实际重量为准</view>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="form-title">物流与凭证</view>
+    
+    <view class="form-item">
+      <view class="label">物流方式</view>
+      <picker bindchange="bindLogisticsChange" value="{{logisticsIndex}}" range="{{logisticsList}}">
+        <view class="picker">
+          {{logisticsList[logisticsIndex]}} ▾
+        </view>
+      </picker>
+    </view>
+    
+    <view class="form-item column">
+      <view class="label">处理凭证 (可选)</view>
+      <view class="upload-box" bindtap="chooseImage">
+        <image wx:if="{{image}}" src="{{image}}" mode="aspectFill" class="preview-img"></image>
+        <view wx:else class="upload-placeholder">
+          <text class="plus">+</text>
+          <text>上传照片</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-btn">
+    <button class="btn btn-lab" bindtap="submitOrder">提交订单</button>
+  </view>
+</view>

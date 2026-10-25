@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "商品详情",
+  "usingComponents": {
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

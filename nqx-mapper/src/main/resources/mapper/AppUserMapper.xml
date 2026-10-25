@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  小程序用户 Mapper XML
+  ============================================================================
+  注意：app_user 有 deleted 列，手写 SQL 必须自己带 `deleted = 0`。
+  MyBatis-Plus 的逻辑删除只对它自动生成的 SQL 生效。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.AppUserMapper">
+
+    <!--
+      原子累加回收统计。
+
+      关键在于 `total_weight = total_weight + #{weight}`：
+      读、算、写三步合并成一条 SQL，由 InnoDB 的行锁保证原子性，
+      并发确认多笔回收单时不会互相覆盖。
+
+      若写成应用层「查出 totalWeight → 加上本次重量 → updateById」，
+      两笔并发确认必然丢更新，且两笔业务都返回成功，问题极难发现。
+    -->
+    <update id="addRecycleStats">
+        UPDATE app_user
+        SET total_weight = total_weight + #{weight},
+            carbon_saved = carbon_saved + #{carbon}
+        WHERE id = #{userId}
+          AND deleted = 0
+    </update>
+
+</mapper>

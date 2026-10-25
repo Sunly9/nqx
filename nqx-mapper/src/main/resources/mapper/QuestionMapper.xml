@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  问答题库 Mapper XML
+  ============================================================================
+  手写 SQL 必须自己带 `deleted = 0`：MyBatis-Plus 的逻辑删除只作用于它自动生成的 SQL。
+  漏了的话，后台"已删除"的题目会继续出现在列表里，运营会反复以为自己删失败了。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.QuestionMapper">
+
+    <!--
+      后台题库多条件检索。
+
+      刻意不查 options 列：
+        1. 它是 JSON，后台列表页用不上（点进详情才需要）；
+        2. 选项文本加起来可能几百字符，一页 20 条就是几 KB 的无用传输；
+        3. 列表与详情的字段分离，也让"哪些字段对列表可见"这件事显式化。
+
+      ORDER BY 补 id 作为最终排序键：
+        sort 与 publish_date 都有大量重复值，只按它们排序时同值行的顺序不确定，
+        翻页会出现重复或漏项。
+    -->
+    <select id="selectAdminPage" resultType="com.nqx.pojo.entity.Question">
+        SELECT id,
+               content,
+               question_type,
+               correct_answer,
+               analysis,
+               points,
+               difficulty,
+               publish_date,
+               status,
+               sort,
+               create_time,
+               update_time
+        FROM question
+        <where>
+            deleted = 0
+            <if test="query.content != null and query.content != ''">
+                AND content LIKE CONCAT('%', #{query.content}, '%')
+            </if>
+            <if test="query.questionType != null">
+                AND question_type = #{query.questionType}
+            </if>
+            <if test="query.difficulty != null">
+                AND difficulty = #{query.difficulty}
+            </if>
+            <if test="query.status != null">
+                AND status = #{query.status}
+            </if>
+            <if test="query.startDate != null">
+                AND publish_date &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND publish_date &lt;= #{query.endDate}
+            </if>
+        </where>
+        ORDER BY sort ASC, id DESC
+    </select>
+
+</mapper>

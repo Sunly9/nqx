@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  订单明细 Mapper XML
+  ============================================================================
+  注意：order_item 表没有 deleted 列（明细不做逻辑删除，随主表一起失效），
+  因此本文件的 SQL 不带 deleted 条件 —— 对无该列的表盲加会导致 Unknown column。
+  但主表 biz_order 有 deleted，JOIN 时必须带上。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.OrderItemMapper">
+
+    <!--
+      统计用户已兑换某商品的数量（每人限兑校验）。
+
+      为什么要 JOIN 主表而不是只查明细？
+      因为"这是不是一笔有效的兑换单"这个信息在主表上：
+      order_type / pay_type / status / deleted 都在 biz_order 里。
+      只查明细会把采购单、回收单、已取消单的明细一起算进来，限兑就形同虚设。
+
+      状态过滤用 NOT IN (30, 50)：
+        30 = 已取消、50 = 已关闭。这两类订单不该占用用户的限兑额度。
+      没有用「= 41 或 42 或 43」的写法，是为了将来新增"待发货"之外的
+      中间状态时不必回来改这里 —— 排除法比枚举法更耐变更。
+    -->
+    <select id="countExchangedQuantity" resultType="java.lang.Integer">
+        SELECT IFNULL(SUM(oi.quantity), 0)
+        FROM order_item oi
+                 INNER JOIN biz_order o ON o.id = oi.order_id
+        WHERE o.user_id = #{userId}
+          AND o.order_type = 2
+          AND o.pay_type = 1
+          AND o.status NOT IN (30, 50)
+          AND o.deleted = 0
+          AND oi.item_type = 1
+          AND oi.item_id = #{productId}
+    </select>
+
+</mapper>

@@ -1,0 +1,65 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/procurement/user/index",
+    "pages/lab/home/index",
+    "pages/lab/recycle/send/index",
+    "pages/lab/recycle/pickup/index",
+    "pages/lab/guide/index",
+    "pages/lab/quiz/index",
+    "pages/procurement/home/index",
+    "pages/procurement/product/detail/index",
+    "pages/procurement/product/reviews/index",
+    "pages/procurement/cart/index",
+    "pages/procurement/orders/index",
+    "pages/procurement/orders/confirm/index",
+    "pages/procurement/orders/detail/index",
+    "pages/procurement/orders/review/index",
+    "pages/procurement/repair/apply/index",
+    "pages/procurement/help/index",
+    "pages/user/index",
+    "pages/order/list/index",
+    "pages/order/detail/index",
+    "pages/points/index",
+    "pages/address/list/index",
+    "pages/address/edit/index",
+    "pages/help/index",
+    "pages/profile/edit/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "纽启新生",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#07c160",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/lab/home/index",
+        "text": "回收"
+      },
+      {
+        "pagePath": "pages/procurement/home/index",
+        "text": "商城"
+      },
+      {
+        "pagePath": "pages/procurement/cart/index",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/order/list/index",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

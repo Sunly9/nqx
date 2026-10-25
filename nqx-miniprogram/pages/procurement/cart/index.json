@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "购物车",
+  "usingComponents": {
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

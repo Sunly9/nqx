@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "个人中心",
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "procurement-user": "/components/procurement-user/index",
+    "nqx-icon": "/components/nqx-icon/index"
+  }
+}

@@ -1,0 +1,244 @@
+# ============================================================================
+# 纽启新生 (NQX) — 主配置
+# ----------------------------------------------------------------------------
+# 本文件放「与环境无关」的通用配置；数据源、Redis 等环境相关配置放在
+# application-dev.yml / application-prod.yml 中，通过 spring.profiles.active 切换。
+#
+# 敏感信息（数据库密码、微信 AppSecret）一律用 ${ENV_VAR:default} 形式，
+# 生产环境通过环境变量注入，绝不把真实密码提交进 Git。
+# ============================================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+  # 优雅停机：收到停止信号后先拒绝新请求，等待进行中的请求处理完再退出。
+  # Spring Boot 3.x 默认已开启，这里只配置等待超时。
+  shutdown: graceful
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 200
+      min-spare: 20
+    # 单次表单/文件上传大小上限，与 spring.servlet.multipart 保持一致
+    max-http-form-post-size: 20MB
+    # 生产环境建议关闭，避免暴露容器实现细节（此处保留以便开发排查）
+    server-header: nqx
+
+spring:
+  application:
+    name: nqx
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  threads:
+    virtual:
+      enabled: false
+
+  # --------------------------------------------------------------------------
+  # Jackson 序列化
+  # --------------------------------------------------------------------------
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    # 值为 null 的字段不参与序列化：减小响应体，也避免前端拿到一堆 null 做无谓判断
+    default-property-inclusion: non_null
+    serialization:
+      # 关键：把 LocalDateTime 序列化成 "2026-10-15 12:00:00" 而不是时间戳数组，
+      # 方便前端直接展示、也便于人工看日志
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      # 前端可能传入多余字段（如分页参数），不因未知字段直接报错
+      fail-on-unknown-properties: false
+
+  # --------------------------------------------------------------------------
+  # 文件上传
+  # --------------------------------------------------------------------------
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # --------------------------------------------------------------------------
+  # 数据库迁移（Flyway）
+  # --------------------------------------------------------------------------
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # SQL 脚本含中文注释，必须显式指定 UTF-8，否则中文会乱码
+    encoding: UTF-8
+    # 迁移脚本一旦执行过就不允许再修改，改动校验和会直接启动失败。
+    # 这是防止「有人在生产库上偷偷改历史脚本」的重要保护，不要关闭。
+    validate-on-migrate: true
+    clean-disabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+
+# ============================================================================
+# MyBatis-Plus
+# ============================================================================
+mybatis-plus:
+  # XML 映射文件位置。复杂动态 SQL（后台多条件检索、看板聚合统计）手写在这里
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.nqx.pojo.entity
+  configuration:
+    # 下划线列名 → 驼峰属性名，如此 order_no 自动映射到 orderNo
+    map-underscore-to-camel-case: true
+    # 关闭二级缓存：本项目用 Redis 做缓存，MyBatis 二级缓存作用域是 SqlSessionFactory，
+    # 多实例部署下无法跨节点失效，容易读到脏数据
+    cache-enabled: false
+    # 查询结果为 null 时也调用 setter，避免某些集合字段保持旧值
+    call-setters-on-nulls: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      # 逻辑删除全局配置，配合实体上的 @TableLogic 使用
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # 更新时忽略 null 字段（默认行为，显式写出以便阅读）
+      update-strategy: not_null
+
+# ============================================================================
+# Sa-Token 认证
+# ============================================================================
+sa-token:
+  # 从请求头 Authorization 中读取 token
+  token-name: Authorization
+  # 前端传的是 "Bearer xxx"，Sa-Token 会自动剥离该前缀
+  token-prefix: Bearer
+  # token 有效期 7 天（秒）
+  timeout: 604800
+  # 闲置超时：-1 表示不限制（由各 StpLogic 按端自行覆盖）
+  active-timeout: -1
+  # 允许同一账号多端同时登录（小程序 + 管理后台同时在线是正常场景）
+  is-concurrent: true
+  # 多端登录时是否共用一个 token。false = 每次登录生成新 token，
+  # 这样可以做到「在 A 手机登录踢掉 B 手机」而互不影响其它端
+  is-share: false
+  token-style: uuid
+  # 关闭 Sa-Token 自身的日志输出，避免与业务日志混在一起
+  is-log: false
+  is-read-cookie: false
+  is-read-header: true
+  is-read-body: false
+
+# ============================================================================
+# 接口文档（springdoc-openapi）
+# 注意：不要用 Knife4j，它在 Boot 3.5 上运行期抛 NoSuchMethodError，详见 docs/04
+# ============================================================================
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    # 关闭「Try it out」在生产环境的暴露由 profile 控制
+    disable-swagger-default-url: true
+  api-docs:
+    path: /v3/api-docs
+  default-produces-media-type: application/json
+
+# ============================================================================
+# Actuator 健康检查（供 Docker healthcheck 使用）
+# ============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+# ============================================================================
+# 业务自定义配置
+# ============================================================================
+nqx:
+  # 启动初始化：仅当 sys_user 表为空时才会创建管理员
+  init:
+    admin-username: ${INIT_ADMIN_USERNAME:admin}
+    # 生产环境务必用环境变量覆盖，且首次登录后立即修改
+    admin-password: ${INIT_ADMIN_PASSWORD:Admin@123}
+  # 文件上传
+  #
+  # ⚠️ type 决定文件存在哪里：
+  #     local —— 本地磁盘 ./uploads，返回相对路径 /files/...
+  #              仅适合本地开发。容器环境下磁盘是临时的，重启就丢。
+  #     cos   —— 腾讯云 COS，返回绝对地址 https://...
+  #              容器部署（微信云托管 / Docker / K8s）必须用这个。
+  #
+  # 默认 local：本地开发不该因为没配云存储而启动失败。
+  # application-prod.yml 里已覆盖为 cos。
+  upload:
+    type: ${UPLOAD_TYPE:local}
+    # 文件对外访问的 URL 前缀（仅 local 模式使用）
+    url-prefix: /files
+    # 本地存储目录（相对路径基于应用启动时的工作目录，仅 local 模式使用）
+    local-path: ./uploads
+    # 允许的文件扩展名
+    allowed-extensions: jpg,jpeg,png,gif,webp,bmp
+    # 允许的 MIME 类型
+    allowed-content-types: image/jpeg,image/png,image/gif,image/webp,image/bmp
+    # 腾讯云 COS（type=cos 时必填 secret-id / secret-key / bucket）
+    cos:
+      # 建议用【子账号】密钥，只授权这一个桶的 uploads/ 前缀读写，
+      # 不要用主账号密钥 —— 泄露时影响范围完全不同
+      secret-id: ${COS_SECRET_ID:}
+      secret-key: ${COS_SECRET_KEY:}
+      # 地域必须与桶所在地域一致，否则请求会被拒（SignatureDoesNotMatch）
+      region: ${COS_REGION:ap-shanghai}
+      # 桶名必须带 APPID 后缀，形如 mybucket-1300000000
+      bucket: ${COS_BUCKET:}
+      # 桶内前缀，把程序上传的文件与手工素材分开，便于生命周期管理
+      key-prefix: ${COS_KEY_PREFIX:uploads}
+      # 可选：绑定了 CDN / 自定义域名时填这里，返回的 URL 会走该域名
+      domain: ${COS_DOMAIN:}
+  # ---------------------------------------------------------------------------
+  # 前端（管理后台 SPA）托管
+  # ---------------------------------------------------------------------------
+  #   spa-enabled=false（默认）→ 后端只提供 /admin/** 接口，前端由 vite dev server 提供。
+  #                              这是本地开发的形态。
+  #   spa-enabled=true          → 后端额外提供 /app/static 下的静态文件，
+  #                              并把 /order/recycle 这类前端路由回退到 index.html。
+  #                              这是容器部署的形态（Dockerfile 会把 dist 复制进镜像）。
+  #
+  # 为什么默认 false：本地开发时不该让后端掺和前端资源，
+  # 否则访问 /dashboard 会拿到一个空的 index.html（因为 dist 不存在）。
+  web:
+    spa-enabled: ${SPA_ENABLED:false}
+  # 订单业务参数
+  order:
+    # 采购单未支付自动关闭时长（分钟）
+    timeout-minutes: 30
+    # 延迟队列扫描间隔（毫秒）。@Scheduled 需要毫秒值，故直接配毫秒
+    timeout-scan-interval-ms: 30000
+    # 单次扫描最多处理的订单数，避免一次拉太多把线程池占满
+    timeout-scan-batch-size: 50
+    # 补偿任务扫描间隔（毫秒）——兜底那些错过延迟队列时间窗的订单
+    # （Redis 未开持久化时重启会丢任务，必须靠它兜底）
+    compensate-scan-interval-ms: 300000
+  # 缓存参数
+  cache:
+    # 商品缓存逻辑过期时间（秒）
+    product-expire-seconds: 1800
+    # 逻辑过期时间上叠加的随机秒数，用于打散过期时间、防止缓存雪崩
+    random-expire-seconds: 300
+  # 微信小程序
+  wechat:
+    app-id: ${WX_APP_ID:}
+    app-secret: ${WX_APP_SECRET:}
+    # ⚠️ 危险开关：开启后无需真实微信授权即可登录（用 code 的哈希当 openid）。
+    #    仅用于本地开发与自动化测试，生产环境必须保持 false。
+    #    application-dev.yml 中显式设为 true，prod 不覆盖即默认 false。
+    #    「默认拒绝」是安全设计的底线：忘配参数时应当无法登录，而不是人人可登录。
+    mock-enabled: false
+    # 登录凭证校验接口
+    login-url: https://api.weixin.qq.com/sns/jscode2session
+    # 获取接口调用凭证
+    token-url: https://api.weixin.qq.com/cgi-bin/token
+    # 获取手机号
+    phone-url: https://api.weixin.qq.com/wxa/business/getuserphonenumber
+    # 订阅消息模板 ID
+    order-status-template-id: ${WX_ORDER_TEMPLATE_ID:}

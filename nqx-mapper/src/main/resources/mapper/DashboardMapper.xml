@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  数据看板 Mapper XML
+  ============================================================================
+  本文件全部是聚合统计 SQL，有一类问题必须专门注意：
+
+  【逻辑删除与聚合统计】
+  聚合查询同样要自己带 `deleted = 0`。漏了会怎样？
+  已删除的订单仍会被计入"订单总数""回收总重"，看板数字比真实值偏大，
+  而这种偏差不会报错、也很难被发现 —— 通常要等到有人对账时才察觉。
+
+  另一个高频错误是 LEFT JOIN 与 COUNT 的组合：
+    COUNT(*)      会连同 LEFT JOIN 产生的 NULL 行一起计数
+    COUNT(子表.id) 只计子表真正匹配上的行
+  统计"有兑换记录的商品数"这类需求时用错，数字会明显偏大。
+  ============================================================================
+-->
+<mapper namespace="com.nqx.mapper.DashboardMapper">
+
+    <!--
+      总览卡片。
+
+      用子查询而不是多个 JOIN 再 COUNT(DISTINCT)：
+      这几张表之间没有共同的关联维度（用户、订单、商品彼此独立），
+      强行 JOIN 会形成笛卡尔积，再去重反而更慢也更易错。
+      子查询各自走各自的索引，语义也一目了然。
+    -->
+    <select id="selectOverview" resultType="java.util.Map">
+        SELECT (SELECT COUNT(*) FROM app_user WHERE deleted = 0)                        AS userCount,
+               (SELECT COUNT(*) FROM biz_order WHERE deleted = 0)                       AS orderCount,
+               (SELECT IFNULL(SUM(actual_weight), 0) FROM biz_order
+                WHERE deleted = 0 AND order_type = 1 AND status = 13)                   AS recycleWeight,
+               (SELECT IFNULL(SUM(carbon_saved), 0) FROM biz_order
+                WHERE deleted = 0 AND order_type = 1 AND status = 13)                   AS carbonSaved,
+               (SELECT IFNULL(SUM(change_value), 0) FROM points_record
+                WHERE change_value &gt; 0)                                               AS pointsIssued,
+               (SELECT COUNT(*) FROM product WHERE deleted = 0)                         AS productCount
+    </select>
+
+    <!--
+      回收量趋势（按日聚合）。
+
+      DATE(create_time) 上的函数会让索引失效 —— 但这里条件是
+      `create_time >= #{startDate}`（范围扫描仍可用 idx_create_time），
+      真正参与 GROUP BY 的是函数结果，属于必要开销。
+      若数据量再大一个量级，正确做法是加一张按日预聚合的统计表，
+      由定时任务每天凌晨汇总一次，看板只读那张表。
+    -->
+    <select id="selectRecycleTrend" resultType="java.util.Map">
+        SELECT DATE(create_time)              AS statDate,
+               COUNT(*)                       AS orderCount,
+               IFNULL(SUM(actual_weight), 0)  AS totalWeight
+        FROM biz_order
+        WHERE deleted = 0
+          AND order_type = 1
+          AND status = 13
+          AND create_time &gt;= #{startDate}
+        GROUP BY DATE(create_time)
+        ORDER BY statDate
+    </select>
+
+    <!--
+      订单状态分布。
+      状态码的中文说明由 Java 侧的 OrderStatusEnum 补，
+      SQL 里不做 CASE WHEN 映射 —— 否则状态文案会散落在两处，
+      改文案时容易漏掉一处。
+    -->
+    <select id="selectOrderStatusDistribution" resultType="java.util.Map">
+        SELECT status    AS status,
+               order_type AS orderType,
+               COUNT(*)  AS total
+        FROM biz_order
+        WHERE deleted = 0
+        GROUP BY status, order_type
+        ORDER BY total DESC
+    </select>
+
+    <!--
+      积分发放 / 消耗趋势。
+      同一条 SQL 里用 CASE WHEN 把正负变动分成两列，
+      比查两次再在 Java 里按日期对齐要简单得多。
+    -->
+    <select id="selectPointsTrend" resultType="java.util.Map">
+        SELECT DATE(create_time) AS statDate,
+               SUM(CASE WHEN change_value &gt; 0 THEN change_value ELSE 0 END)  AS earn,
+               SUM(CASE WHEN change_value &lt; 0 THEN -change_value ELSE 0 END) AS spend
+        FROM points_record
+        WHERE create_time &gt;= #{startDate}
+        GROUP BY DATE(create_time)
+        ORDER BY statDate
+    </select>
+
+    <!--
+      Top 商品（按下单件数）。
+
+      注意 COUNT(DISTINCT oi.order_id) 而不是 COUNT(*)：
+      同一次下单里同款商品只会有一条明细，看似一样；
+      但若将来出现"同一订单拆成多条明细"的情况，COUNT(*) 会把数量算重。
+      用 COUNT(DISTINCT order_id) 语义明确 —— 统计的是"被多少笔订单购买过"。
+    -->
+    <select id="selectTopProducts" resultType="java.util.Map">
+        SELECT oi.item_name                     AS productName,
+               COUNT(DISTINCT oi.order_id)      AS orderCount,
+               IFNULL(SUM(oi.quantity), 0)      AS totalQuantity
+        FROM order_item oi
+                 INNER JOIN biz_order o ON o.id = oi.order_id
+        WHERE o.deleted = 0
+          AND o.status NOT IN (30, 50)
+          AND oi.item_type = 1
+        GROUP BY oi.item_name
+        ORDER BY totalQuantity DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -1,0 +1,15 @@
+/*
+  nqx-icon 的基础盒模型。
+
+  三个属性都不能省：
+  - display:inline-block —— 默认 view 是 block，会把后面跟的文字挤到下一行。
+    原来 emoji 是 inline 的，换成组件后如果保持 block，菜单项的文字会掉行。
+  - vertical-align:middle —— 与同级文字对齐；基线对齐会让图标偏低半个字高。
+  - flex-shrink:0 —— 图标常出现在 flex 容器里（菜单左区、底部工具栏）。
+    不加这一条，空间紧张时图标会被压扁成一条竖线。
+*/
+.nqx-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}

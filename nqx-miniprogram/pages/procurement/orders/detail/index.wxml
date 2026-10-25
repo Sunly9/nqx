@@ -1,0 +1,82 @@
+<view class="container" wx:if="{{order}}">
+  <!-- Status Header -->
+  <view class="status-header">
+    <view class="status-icon">
+      <nqx-icon wx:if="{{order.status === 'pending_payment'}}" name="clock" size="30" color="#ffffff" />
+      <nqx-icon wx:elif="{{order.status === 'pending_shipment'}}" name="package" size="30" color="#ffffff" />
+      <nqx-icon wx:elif="{{order.status === 'pending_receipt'}}" name="truck" size="30" color="#ffffff" />
+      <nqx-icon wx:elif="{{order.status === 'completed'}}" name="check-circle" size="30" color="#ffffff" />
+      <nqx-icon wx:elif="{{order.status === 'cancelled'}}" name="x-circle" size="30" color="#ffffff" />
+    </view>
+    <view class="status-text">
+      <view class="main-status">{{order.statusText}}</view>
+      <view class="sub-status">{{order.statusDesc}}</view>
+    </view>
+  </view>
+
+  <!-- Address Card -->
+  <view class="card address-card">
+    <nqx-icon name="map-pin" size="20" color="#1989fa" class="addr-icon" />
+    <view class="addr-content">
+      <view class="addr-user">
+        <text class="name">{{order.address.name}}</text>
+        <text class="phone">{{order.address.phone}}</text>
+      </view>
+      <view class="addr-detail">{{order.address.address}}</view>
+    </view>
+  </view>
+
+  <!-- Product List -->
+  <view class="card product-card">
+    <view class="card-title">商品信息</view>
+    <view class="product-item" wx:for="{{order.products}}" wx:key="id">
+      <image class="prod-img" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="prod-info">
+        <view class="prod-name">{{item.name}}</view>
+        <view class="prod-meta">
+          <text class="prod-price">¥{{item.price}}</text>
+          <text class="prod-count">x{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="total-row">
+      <text>实付款</text>
+      <text class="total-price">¥{{order.total_amount}}</text>
+    </view>
+  </view>
+
+  <!-- Order Info -->
+  <view class="card info-card">
+    <view class="info-row">
+      <text class="label">订单编号</text>
+      <text class="value">{{order.order_no}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">下单时间</text>
+      <text class="value">{{order.formattedDate}}</text>
+    </view>
+  </view>
+
+  <!-- Footer Actions -->
+  <view class="footer-bar" wx:if="{{order.status !== 'cancelled'}}">
+    <block wx:if="{{order.status === 'pending_payment'}}">
+      <button class="btn" catchtap="handleCancel">取消订单</button>
+      <button class="btn primary" catchtap="handlePay">去支付</button>
+    </block>
+    <block wx:elif="{{order.status === 'pending_shipment'}}">
+      <button 
+        class="btn {{order.can_remind_ship ? '' : 'is-muted'}}" 
+        catchtap="handleRemindShip"
+      >{{order.remindText || '提醒发货'}}</button>
+    </block>
+    <block wx:elif="{{order.status === 'pending_receipt'}}">
+      <button class="btn primary" catchtap="handleReceive">确认收货</button>
+    </block>
+    <block wx:elif="{{order.status === 'completed' || order.status === 'pending_evaluation'}}">
+    </block>
+  </view>
+</view>
+
+<view class="loading" wx:else>
+  <view class="spinner"></view>
+</view>

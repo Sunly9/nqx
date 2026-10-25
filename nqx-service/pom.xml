@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  nqx-service — 业务逻辑层
+  ============================================================================
+  职责：业务逻辑、事务边界、状态机、缓存、幂等、分布式锁、Excel 导出
+  依赖：nqx-mapper + 缓存/权限/导出等基础设施
+  原则：事务边界只在这一层；Controller 只做参数校验与调用
+  ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.nqx</groupId>
+        <artifactId>nqx-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>nqx-service</artifactId>
+    <name>nqx-service</name>
+    <description>业务逻辑层：事务、状态机、缓存、幂等</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.nqx</groupId>
+            <artifactId>nqx-mapper</artifactId>
+        </dependency>
+
+        <!-- ==================== Redis ==================== -->
+        <!-- 缓存、延迟队列(ZSet)、接口幂等(SETNX)、排行榜(ZSet)、限流 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 分布式锁：用于多实例下定时任务的互斥执行 -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- ==================== 权限 ==================== -->
+        <!-- Service 层需要读取当前登录用户，故依赖必须声明在本模块而非仅 web 模块 -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <!-- 会话存 Redis：多实例共享登录态，避免本地内存会话在负载均衡下失效 -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-jackson</artifactId>
+        </dependency>
+
+        <!-- ==================== Excel 导出 ==================== -->
+        <dependency>
+            <groupId>cn.idev.excel</groupId>
+            <artifactId>fastexcel</artifactId>
+        </dependency>
+
+        <!--
+            ==================== 对象存储（腾讯云 COS） ====================
+
+            为什么需要它：容器化部署（微信云托管 / Docker / K8s）的磁盘是**临时的**，
+            容器重建、扩容、滚动更新都会清空本地文件。用户上传的头像、评价晒图、
+            维修凭证如果还写在 ./uploads 下，重启一次就全部丢失，而且**没有任何报错**。
+
+            版本 5.6.227 是当前稳定线；升级前建议先确认与 okhttp 的兼容性
+            （SDK 内部用它发请求，本项目没有其它地方依赖 okhttp）。
+        -->
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+            <version>5.6.227</version>
+        </dependency>
+
+        <!-- ==================== 对象映射 ==================== -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+    </dependencies>
+</project>

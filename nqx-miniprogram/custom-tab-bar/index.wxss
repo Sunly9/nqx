@@ -1,0 +1,124 @@
+/* ============================================================================
+   自定义 tabBar 样式
+
+   【相比原版的几处改动及理由】
+
+   1. 高度 48px → 50px
+      iPhone 上的标准 tabBar 内容高度是 50px。48px 会让图标与文字挤在一起，
+      而且文字离底部安全区太近。改动很小，但对"看起来是否精致"影响很大。
+
+   2. 1px 实线分隔 → 半像素发丝线
+      原版是 `background: rgba(0,0,0,0.33)` + `scaleY(0.5)`。
+      透明度 0.33 偏重（接近深灰），在高分屏上会显得脏。
+      这里降到 0.06，并用伪元素实现 —— 伪元素不占布局位置，
+      不会影响 flex 排列，比原来多插一个空 <view> 更干净。
+
+   3. 图标改为 background-image 承载的 SVG
+      尺寸固定 22×22 并 `background-size: 100% 100%`，
+      保证 5 个图标视觉重量一致（emoji 时代每个图标的大小都不一样）。
+
+   4. 补上 iPhone 底部安全区
+      原版 `padding-bottom: env(safe-area-inset-bottom)` 是对的，
+      但因为高度写死在 48px 且是 content-box，
+      安全区会把内容往上挤。这里改成"内容固定高 + 安全区额外内边距"，
+      iPhone 上不会被 Home 指示条压住。
+   ============================================================================ */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  background: #ffffff;
+  /* 内容区固定 50px；iPhone 的 Home 指示条区域额外补内边距（非 iPhone 上为 0） */
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 底部弹起时不希望被系统手势条遮挡，统一在这里兜底 */
+  box-sizing: content-box;
+}
+
+/* 顶部发丝分隔线：用伪元素 + scaleY(0.5) 实现半像素，
+   比 1px 实线更细腻，且不占用布局空间 */
+.tab-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  transform: scaleY(0.5);
+  transform-origin: 0 0;
+}
+
+.tab-bar-item {
+  flex: 1;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 点按反馈：轻微变暗。比改变尺寸更稳（不会引起相邻元素抖动） */
+.tab-bar-item-hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 图标外面再包一层，是为了给角标提供定位参照 ——
+   角标要挂在图标右上角，而不是整个 tab 的右上角 */
+.tab-icon-wrap {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+
+.tab-icon {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  /* 选中时图标微微上浮，配合颜色变化形成"抬起"的感觉 */
+  transition: transform 0.18s ease;
+}
+
+.tab-bar-item.active .tab-icon {
+  transform: translateY(-1px) scale(1.06);
+}
+
+.tab-label {
+  font-size: 10px;
+  line-height: 1;
+  margin-top: 3px;
+  transition: color 0.18s ease;
+}
+
+/* 选中项文字加粗。中文在小字号下加粗会略微变宽，
+   但 tabBar 每项宽度固定（flex: 1）、文字居中，所以只会向两侧对称扩张，不会挤动布局 */
+.tab-bar-item.active .tab-label {
+  font-weight: 600;
+}
+
+/* 购物车角标 */
+.tab-badge {
+  position: absolute;
+  top: -4px;
+  left: 100%;
+  margin-left: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #ff4d4f;
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  /* 白色描边让角标从图标上"浮"起来，在深色图标上也看得清 */
+  border: 1px solid #ffffff;
+  white-space: nowrap;
+}

@@ -1,0 +1,100 @@
+# ============================================================================
+# 开发环境配置
+# 激活方式：--spring.profiles.active=dev（默认已激活）
+# ============================================================================
+
+spring:
+  # --------------------------------------------------------------------------
+  # 数据源（HikariCP）
+  # --------------------------------------------------------------------------
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nqx}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&allowMultiQueries=true
+    # 开发环境默认用 root，省去建专用账号的步骤。
+    # 生产环境请改用最小权限账号（见 sql/00_bootstrap.sql 中的 nqx 账号），
+    # 或直接用环境变量覆盖，绝不要让应用在生产持有 root 权限。
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    hikari:
+      pool-name: NqxHikariPool
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      # 必须小于 MySQL 的 wait_timeout（默认 28800 秒），否则会拿到已被服务端关闭的连接
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  # --------------------------------------------------------------------------
+  # Redis
+  # --------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      # 本机 Redis 在 redis.windows-service.conf 中设置了 requirepass 123456。
+      # 注意：这里**不能**写成 ${REDIS_PASSWORD:}（空串），
+      # 因为空串会被当作"有密码"并发出 AUTH ""，Redis 会返回 ERR invalid password。
+      # 若你的 Redis 确实没有密码，请把本行改为 `password:`（留空即 null，不发 AUTH）。
+      password: ${REDIS_PASSWORD:123456}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5s
+      connect-timeout: 5s
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3s
+        shutdown-timeout: 200ms
+
+# ============================================================================
+# 开发环境：允许在没有配置微信 AppID/AppSecret 的情况下模拟登录
+# ----------------------------------------------------------------------------
+# 打开这个开关后，小程序端可以不走真实微信授权直接登录，
+# 用 code 的哈希值当 openid（确定性，同一 code 永远是同一个用户），
+# 这样本地调试与自动化测试才能进行。
+#
+# ⚠️ 生产环境（application-prod.yml）不覆盖该配置，因此保持默认的 false。
+# ============================================================================
+nqx:
+  wechat:
+    mock-enabled: true
+  order:
+    # 开发环境把扫描间隔调小，便于观察超时关闭逻辑；
+    # 生产用 application.yml 里的 30 秒
+    timeout-scan-interval-ms: 10000
+
+# ============================================================================
+# MyBatis-Plus 开发期调试
+# ============================================================================
+mybatis-plus:
+  configuration:
+    # 开发期打印完整 SQL 与结果，方便核对动态 SQL 拼接是否正确。
+    # 生产环境务必换成 NoLoggingImpl（由 application-prod.yml 覆盖），
+    # 否则海量 SQL 日志会迅速打满磁盘
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# ============================================================================
+# 日志
+# ============================================================================
+logging:
+  level:
+    root: info
+    com.nqx: debug
+    # 打开 Spring Web 请求映射日志，便于确认接口是否注册成功
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: info
+    # 开发期观察 Flyway 迁移过程
+    org.flywaydb: info
+    # Redisson 启动信息较多，压到 warn
+    org.redisson: warn
+
+# ============================================================================
+# 开发环境放开接口文档
+# ============================================================================
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
